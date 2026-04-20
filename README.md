@@ -4,7 +4,7 @@
 [![MCP Protocol](https://img.shields.io/badge/MCP-2024--11--05-blue)](https://modelcontextprotocol.io/)
 [![Live](https://img.shields.io/badge/status-live-brightgreen)](https://mcp-market.ru/mcp/)
 
-Hosted **Model Context Protocol (MCP)** server providing AI agents with structured access to the **Russian construction market**: **3,395 contractor companies**, **13,436 house-building projects**, across **18 regions**, exposed through **21 specialized tools**.
+Hosted **Model Context Protocol (MCP)** server providing AI agents with structured access to the **Russian construction market**: **3,395 contractor companies**, **13,436 house-building projects**, across **18 regions**, exposed through **24 specialized tools**.
 
 - **Live endpoint:** <https://mcp-market.ru/mcp/>
 - **Interactive demo:** <https://mcp-market.ru/demo>
@@ -37,7 +37,7 @@ Add the server to `~/Library/Application Support/Claude/claude_desktop_config.js
 }
 ```
 
-Restart Claude Desktop. The 21 tools appear under the MCP icon.
+Restart Claude Desktop. The 24 tools appear under the MCP icon.
 
 ### Cursor, Windsurf, any Streamable-HTTP client
 
@@ -52,14 +52,14 @@ from mcp.client.streamable_http import streamablehttp_client
 async with streamablehttp_client("https://mcp-market.ru/mcp/") as (read, write, _):
     async with ClientSession(read, write) as session:
         await session.initialize()
-        result = await session.call_tool("search_companies",
-                                         {"query": "каркасные дома", "region": "Московская область"})
+        result = await session.call_tool("smart_match", {"brief": "каркасный дом 180 кв.м в Подмосковье до 15 млн"})
         print(result)
 ```
 
-## Tools (21)
+## Tools (24)
 
 ### Search & catalog
+
 | Tool | Purpose |
 | --- | --- |
 | `search_companies` | Search 3 395 contractors by category / region / budget / free-text query |
@@ -69,8 +69,10 @@ async with streamablehttp_client("https://mcp-market.ru/mcp/") as (read, write, 
 | `get_categories` | All categories + company count per category |
 | `get_regions` | All 18 regions + company count per region |
 | `get_stats` | Catalog totals + daily agent-query / lead counters |
+| `export_search_csv` | Export companies/projects search results as CSV (UTF-8 with BOM, Excel-friendly) |
 
 ### Analytics
+
 | Tool | Purpose |
 | --- | --- |
 | `market_analytics` | Aggregate market view: segments, pricing bands, regional density |
@@ -81,14 +83,17 @@ async with streamablehttp_client("https://mcp-market.ru/mcp/") as (read, write, 
 | `compare_companies` | Head-to-head comparison of 2–3 companies |
 
 ### Recommendation & estimation
+
 | Tool | Purpose |
 | --- | --- |
 | `find_best_companies` | Rank contractors matching budget, region, rating floor |
 | `contractor_recommendation` | AI-weighted top picks with reasoning |
+| `smart_match` | Natural-language Russian brief → parsed filters + top-N contractors |
 | `calculate_cost` | Quick cost estimate from category + region + area |
 | `project_estimator` | Detailed estimate with economy / standard / premium tiers |
 
 ### Deep profiles
+
 | Tool | Purpose |
 | --- | --- |
 | `company_portfolio` | Full portfolio: all projects, prices, reviews, contacts |
@@ -96,9 +101,11 @@ async with streamablehttp_client("https://mcp-market.ru/mcp/") as (read, write, 
 | `review_analysis` | Sentiment breakdown, themes, strengths & weaknesses |
 
 ### Lead generation
+
 | Tool | Purpose |
 | --- | --- |
 | `request_quote` | Submit a lead; vendor notified via Telegram + email |
+| `get_lead_status` | Check status of a previously-submitted lead (new / contacted / won / lost) |
 
 ## Pricing
 
@@ -143,4 +150,3 @@ MIT — see [LICENSE](./LICENSE).
 - Site: <https://mcp-market.ru/>
 - Issues: <https://github.com/devids77/mcp-market-ru/issues>
 - Telegram: [@Devavatar](https://t.me/Devavatar)
-
