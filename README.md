@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP Protocol](https://img.shields.io/badge/MCP-2024--11--05-blue)](https://modelcontextprotocol.io/)
 [![Live](https://img.shields.io/badge/status-live-brightgreen)](https://mcp-market.ru/mcp/)
+[![Glama MCP Server](https://glama.ai/mcp/servers/devids77/mcp-market-ru/badge)](https://glama.ai/mcp/servers/devids77/mcp-market-ru)
 
 Hosted **Model Context Protocol (MCP)** server providing AI agents with structured access to the **Russian construction market**: **3,395 contractor companies**, **13,436 house-building projects**, across **18 regions**, exposed through **24 specialized tools**.
 
