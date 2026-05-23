@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCP Market Russia — endpoint для AI-агентов</title>
+<meta name="description" content="MCP-сервер для строительного рынка РФ: 21 инструмент, 3 395 компаний, 13 436 проектов. Подключается к Claude Desktop, Cursor, Windsurf и любым MCP-клиентам.">
+<link rel="canonical" href="https://mcp-market.ru/mcp/">
+<style>
+:root{--bg:#0b1220;--c:#121a2b;--b:#1f2a44;--t:#e6edf7;--m:#94a3b8;--a:#4a9eff;--g:#22c55e;--y:#eab308}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55}
+a{color:var(--a);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:960px;margin:0 auto;padding:32px 20px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;flex-wrap:wrap;gap:12px}
+.logo{font-weight:700;font-size:18px}
+nav a{margin-left:18px;color:var(--m);font-size:14px}
+h1{font-size:36px;margin:0 0 12px;line-height:1.15}
+.sub{color:var(--m);font-size:18px;margin:0 0 24px;max-width:700px}
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin:24px 0 40px}
+.stat{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:14px 18px;min-width:140px}
+.stat b{font-size:22px;color:var(--a);display:block}
+.stat span{color:var(--m);font-size:13px}
+.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:22px;margin:18px 0}
+.card h2{margin:0 0 12px;font-size:20px}
+.card p{color:var(--m);margin:0 0 14px}
+pre{background:#05090f;border:1px solid var(--b);border-radius:8px;padding:14px;overflow-x:auto;color:#d1e7ff;font-size:13px;margin:0;position:relative}
+code{font-family:Menlo,Consolas,monospace}
+.codeblock{position:relative}
+.copy{position:absolute;top:10px;right:10px;background:var(--a);color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.copy:hover{opacity:.85}
+.copy.ok{background:var(--g)}
+.badge{display:inline-block;background:var(--b);color:var(--m);padding:3px 8px;border-radius:6px;font-size:12px;margin-left:6px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.row{grid-template-columns:1fr}h1{font-size:28px}}
+.warn{background:#1a1205;border:1px solid #4a380f;color:#fbd38d;padding:12px 14px;border-radius:8px;font-size:14px;margin-bottom:18px}
+footer{color:var(--m);font-size:13px;margin-top:40px;border-top:1px solid var(--b);padding-top:20px}
+ul.tools{columns:3;gap:8px;padding-left:18px;margin:8px 0 0;font-size:14px;color:var(--t)}
+@media(max-width:700px){ul.tools{columns:2}}
+ul.tools li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">🔌 MCP Market Russia</div>
+  <nav>
+    <a href="/">Главная</a>
+    <a href="/api-docs">API</a>
+    <a href="/dashboard">Дашборд</a><a href="/pricing">Тарифы</a>
+  </nav>
+</header>
+
+<h1>MCP endpoint для AI-агентов <span class="badge">v3.1.1</span></h1>
+<p class="sub">Вы открыли <code>https://mcp-market.ru/mcp/</code> в браузере. Это технический endpoint MCP-протокола для AI-агентов — через него подключаются Claude, Cursor, Windsurf и другие совместимые клиенты. Ниже — как подключить.</p>
+
+<div class="stats">
+  <div class="stat"><b>21</b><span>MCP-инструментов</span></div>
+  <div class="stat"><b>3 395</b><span>компаний РФ</span></div>
+  <div class="stat"><b>13 436</b><span>проектов</span></div>
+  <div class="stat"><b>18</b><span>регионов</span></div>
+</div>
+
+<div class="warn">💡 Если вы AI-агент и ожидали JSON-RPC ответ — отправьте запрос с заголовком <code>Accept: application/json, text/event-stream</code>.</div>
+
+<div class="card">
+  <h2>1. Claude Desktop</h2>
+  <p>Откройте файл конфигурации и добавьте блок <code>mcp-market</code>. На macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>. На Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code>.</p>
+  <div class="codeblock">
+    <button class="copy" onclick="cp(this,'cfg')">Копировать</button>
+<pre id="cfg"><code>{
+  "mcpServers": {
+    "mcp-market": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp-market.ru/mcp/"
+      ]
+    }
+  }
+}</code></pre>
+  </div>
+  <p style="margin-top:14px">После сохранения перезапустите Claude Desktop. В списке инструментов появятся <code>search_companies</code>, <code>calculate_cost</code>, <code>market_analytics</code> и ещё 18 тулзов.</p>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>2. Cursor / Windsurf</h2>
+    <p>В настройках MCP добавьте URL сервера:</p>
+    <div class="codeblock">
+      <button class="copy" onclick="cp(this,'url')">Копировать</button>
+<pre id="url"><code>https://mcp-market.ru/mcp/</code></pre>
+    </div>
+    <p style="margin-top:14px">Транспорт: <code>streamable-http</code>. Авторизация не требуется.</p>
+  </div>
+
+  <div class="card">
+    <h2>3. curl (проверка)</h2>
+    <p>Инициализация сессии:</p>
+    <div class="codeblock">
+      <button class="copy" onclick="cp(this,'curl')">Копировать</button>
+<pre id="curl"><code>curl -N https://mcp-market.ru/mcp/ \
+ -H "Content-Type: application/json" \
+ -H "Accept: application/json, text/event-stream" \
+ -d '{"jsonrpc":"2.0","id":1,
+      "method":"initialize",
+      "params":{"protocolVersion":"2024-11-05",
+      "capabilities":{},
+      "clientInfo":{"name":"curl","version":"1"}}}'</code></pre>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Что умеет сервер</h2>
+  <p>21 инструмент для работы с данными о строительном рынке РФ:</p>
+  <ul class="tools">
+    <li><code>search_companies</code></li>
+    <li><code>search_projects</code></li>
+    <li><code>compare_companies</code></li>
+    <li><code>calculate_cost</code></li>
+    <li><code>get_company</code></li>
+    <li><code>get_project</code></li>
+    <li><code>get_categories</code></li>
+    <li><code>get_regions</code></li>
+    <li><code>get_stats</code></li>
+    <li><code>request_quote</code></li>
+    <li><code>market_analytics</code></li>
+    <li><code>find_best_companies</code></li>
+    <li><code>price_comparison</code></li>
+    <li><code>company_portfolio</code></li>
+    <li><code>market_report</code></li>
+    <li><code>review_analysis</code></li>
+    <li><code>contractor_recommendation</code></li>
+    <li><code>project_estimator</code></li>
+    <li><code>trend_analyzer</code></li>
+    <li><code>company_deep_profile</code></li>
+    <li><code>region_comparison</code></li>
+  </ul>
+  <p style="margin-top:16px">Полная документация: <a href="/api-docs">/api-docs</a> · Живая статистика: <a href="/dashboard">/dashboard</a></p>
+</div>
+
+<footer>
+  Протокол: MCP 2024-11-05 · Транспорт: streamable-http · Данные: PostgreSQL 16 · Открытый endpoint, без API-ключа.
+</footer>
+</div>
+
+<script>
+function cp(btn,id){
+  const t=document.getElementById(id).innerText;
+  navigator.clipboard.writeText(t).then(()=>{
+    btn.textContent="✓ Скопировано";btn.classList.add("ok");
+    setTimeout(()=>{btn.textContent="Копировать";btn.classList.remove("ok")},1800);
+  });
+}
+</script>
+</body>
+</html>

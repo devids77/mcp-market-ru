@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>API Docs — MCP Market Russia</title><style>
+*{margin:0;padding:0;box-sizing:border-box}:root{--p:#2563eb;--bg:#f8fafc;--c:#fff;--t:#1e293b;--m:#64748b;--b:#e2e8f0;--g:#10b981;--cb:#1e293b;--ct:#e2e8f0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t);line-height:1.6}
+.ctr{max-width:1100px;margin:0 auto;padding:0 24px}
+.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb,#3b82f6);color:#fff;padding:72px 0 52px;text-align:center}
+.hero h1{font-size:2.4rem;font-weight:800;margin-bottom:10px}.hero p{font-size:1.1rem;opacity:.9;max-width:600px;margin:0 auto 20px}
+.badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:5px 14px;border-radius:20px;font-size:.83rem}
+.nav{background:var(--c);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:100}
+.nav-i{display:flex;gap:6px;padding:10px 0;overflow-x:auto}
+.nav a{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--m);font-size:.88rem;font-weight:500;white-space:nowrap}
+.nav a:hover,.nav a.a{background:var(--p);color:#fff}
+section{padding:44px 0}section h2{font-size:1.5rem;margin-bottom:6px;font-weight:700}
+.sub{color:var(--m);margin-bottom:28px}.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.pc{background:var(--c);border:2px solid var(--b);border-radius:14px;padding:24px;transition:transform .2s}
+.pc:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.07)}
+.pc.pop{border-color:var(--p)}.pc.pop::after{content:"Popular";position:absolute;top:-11px;right:14px;background:var(--p);color:#fff;padding:3px 10px;border-radius:7px;font-size:.72rem;font-weight:600}
+.pc h3{font-size:1.1rem}.pa{font-size:1.9rem;font-weight:800;color:var(--p);margin:10px 0}.pa span{font-size:.85rem;font-weight:400;color:var(--m)}
+.pc ul{list-style:none;margin-top:14px}.pc li{padding:5px 0;font-size:.87rem;color:var(--m)}.pc li::before{content:"\2713 ";color:var(--g);font-weight:700}
+.ep{background:var(--c);border:1px solid var(--b);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.ep-h{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer}
+.mt{background:var(--g);color:#fff;padding:2px 9px;border-radius:5px;font-size:.73rem;font-weight:700;min-width:44px;text-align:center}
+.mt.post{background:var(--p)}
+.ep-p{font-family:monospace;font-size:.88rem;font-weight:600}.ep-d{color:var(--m);font-size:.83rem;margin-left:auto}
+.ep-det{padding:0 16px 16px;display:none}.ep.open .ep-det{display:block}
+.tb{font-size:.72rem;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase}
+.tf{background:#dcfce7;color:#166534}.ts{background:#fef3c7;color:#92400e}.tp{background:#ede9fe;color:#5b21b6}
+.pt{width:100%;border-collapse:collapse;margin-top:8px;font-size:.84rem}
+.pt th{text-align:left;padding:7px 10px;background:var(--bg);color:var(--m);font-weight:600;border-bottom:1px solid var(--b)}
+.pt td{padding:7px 10px;border-bottom:1px solid var(--b)}
+.pn{font-family:monospace;color:var(--p);font-weight:600}.pr{color:#ef4444;font-size:.73rem;font-weight:600}
+.cb{background:var(--cb);color:var(--ct);padding:16px;border-radius:9px;font-family:monospace;font-size:.83rem;overflow-x:auto;margin-top:8px;position:relative;white-space:pre-wrap}
+.cc{color:#6b7280}.cs{color:#34d399}.ck{color:#60a5fa}.step{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:20px 20px 20px 64px;margin-bottom:14px;position:relative}
+.step .n{position:absolute;left:20px;top:20px;width:30px;height:30px;background:var(--p);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem}
+.step h4{margin-bottom:6px}.step p{color:var(--m);font-size:.88rem}
+.try-s{background:var(--c);border:1px solid var(--b);border-radius:14px;padding:28px;margin-top:20px}
+.try-f{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.try-f select,.try-f input{padding:9px 12px;border:1px solid var(--b);border-radius:7px;font-size:.88rem;background:var(--bg)}
+.try-f select{min-width:200px}.try-f input{flex:1;min-width:180px}
+.try-btn{background:var(--p);color:#fff;border:none;padding:9px 22px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.88rem}
+.try-btn:hover{background:#1d4ed8}
+#try-r{background:var(--cb);color:var(--ct);padding:16px;border-radius:9px;font-family:monospace;font-size:.83rem;min-height:80px;max-height:350px;overflow:auto;white-space:pre-wrap;display:none}
+footer{background:var(--cb);color:var(--ct);padding:36px 0;text-align:center;margin-top:44px}
+footer a{color:var(--p);text-decoration:none}footer p{margin:3px 0;font-size:.88rem;opacity:.7}
+@media(max-width:768px){.hero h1{font-size:1.7rem}.hero{padding:40px 0 30px}.pg{grid-template-columns:1fr}.ep-d{display:none}.try-f{flex-direction:column}}
+</style>
+    <!-- injected:seo-v3-polish -->
+    <meta name="description" content="MCP Market Russia API — 21 инструмент для AI-агентов: поиск подрядчиков, сравнение проектов, аналитика строительного рынка. JSON-RPC + FastMCP.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mcp-market.ru/api-docs">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="MCP Market Russia">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:title" content="API Docs — MCP Market Russia">
+    <meta property="og:description" content="MCP Market Russia API — 21 инструмент для AI-агентов: поиск подрядчиков, сравнение проектов, аналитика строительного рынка. JSON-RPC + FastMCP.">
+    <meta property="og:url" content="https://mcp-market.ru/api-docs">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="API Docs — MCP Market Russia">
+    <meta name="twitter:description" content="MCP Market Russia API — 21 инструмент для AI-агентов: поиск подрядчиков, сравнение проектов, аналитика строительного рынка. JSON-RPC + FastMCP.">
+  </head><body>
+<div class="hero"><div class="ctr">
+<h1>MCP Market Russia API</h1>
+<p>Каталог строительных компаний и проектов домов России для AI-агентов, аналитиков и разработчиков</p>
+<div class="badges"><span class="badge">3 395+ компаний</span><span class="badge">140+ проектов</span><span class="badge">21 MCP Tool</span><span class="badge">19 REST API</span><span class="badge">6 AI-эндпоинтов</span></div>
+</div></div>
+<div class="nav"><div class="ctr nav-i">
+<a href="#qs" class="a">Быстрый старт</a><a href="#pr">Тарифы</a><a href="#ep">Эндпоинты</a><a href="#try">Попробовать</a><a href="#auth">Авторизация</a><a href="#err">Ошибки</a><a href="#mcp">MCP</a>
+</div></div>
+
+<section id="qs"><div class="ctr"><h2>Быстрый старт</h2><p class="sub">Начните за 3 шага</p>
+<div class="step"><span class="n">1</span><h4>Зарегистрируйте API-ключ</h4><p>POST-запрос для бесплатного ключа</p>
+<div class="cb"><span class="cc"># Регистрация</span>
+curl -X POST http://212.193.27.12:8000/api/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Иван", "email": "ivan@example.com"}'</div></div>
+<div class="step"><span class="n">2</span><h4>Получите ключ</h4><p>API вернёт уникальный ключ</p>
+<div class="cb">{"<span class="ck">api_key</span>": "<span class="cs">mcp_free_a1b2c3...</span>", "<span class="ck">plan</span>": "<span class="cs">free</span>", "<span class="ck">requests_limit</span>": 100}</div></div>
+<div class="step"><span class="n">3</span><h4>Делайте запросы</h4><p>Передавайте ключ в параметре api_key</p>
+<div class="cb"><span class="cc"># Поиск компаний</span>
+curl "http://212.193.27.12:8000/api/v1/search/companies?q=каркас&amp;api_key=ВАШ_КЛЮЧ"
+<span class="cc"># AI-рекомендации (Pro+)</span>
+curl "http://212.193.27.12:8000/api/v1/ai/recommend?budget=5000000&amp;api_key=ВАШ_КЛЮЧ"</div></div>
+</div></section>
+<section id="pr" style="background:#fff"><div class="ctr"><h2>Тарифные планы</h2><p class="sub">Выберите подходящий план</p>
+<div class="pg">
+<div class="pc"><h3>Free</h3><p style="color:var(--m);font-size:.83rem">Для знакомства</p><div class="pa">0 &#8381; <span>/мес</span></div>
+<ul><li>100 запросов/мес</li><li>Поиск компаний и проектов</li><li>Категории и регионы</li><li>Базовая статистика</li><li>Сравнение компаний</li></ul></div>
+<div class="pc" style="border-color:var(--p);position:relative"><h3>Starter</h3><p style="color:var(--m);font-size:.83rem">Для аналитиков</p><div class="pa">2 990 &#8381; <span>/мес</span></div>
+<ul><li>5 000 запросов/мес</li><li>Всё из Free</li><li>Аналитика рынка</li><li>Лучшие компании</li><li>Сравнение цен</li><li>Аналитический отчёт</li></ul></div>
+<div class="pc"><h3>Pro</h3><p style="color:var(--m);font-size:.83rem">Для AI-разработчиков</p><div class="pa">7 990 &#8381; <span>/мес</span></div>
+<ul><li>50 000 запросов/мес</li><li>Всё из Starter</li><li>AI-анализ отзывов</li><li>AI-рекомендации</li><li>Оценка стоимости</li><li>Тренды рынка</li><li>Глубокий профиль</li><li>Сравнение регионов</li></ul></div>
+<div class="pc"><h3>Enterprise</h3><p style="color:var(--m);font-size:.83rem">Крупный бизнес</p><div class="pa">По запросу</div>
+<ul><li>Безлимит запросов</li><li>Всё из Pro</li><li>Выделенный сервер</li><li>SLA 99.9%</li><li>Персональная поддержка</li></ul></div>
+</div></div></section>
+<section id="ep"><div class="ctr"><h2>API Эндпоинты</h2><p class="sub">Полный список методов</p>
+
+<h3 style="margin-bottom:12px">Поиск <span class="tb tf">Free</span></h3>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/search/companies</span><span class="ep-d">Поиск компаний</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">q</span></td><td>string</td><td>Поисковый запрос</td></tr><tr><td><span class="pn">region</span></td><td>string</td><td>Фильтр по региону</td></tr><tr><td><span class="pn">category</span></td><td>string</td><td>Фильтр по категории</td></tr><tr><td><span class="pn">limit</span></td><td>int</td><td>Кол-во (по умолч. 20)</td></tr></table></div></div>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/search/projects</span><span class="ep-d">Поиск проектов домов</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">q</span></td><td>string</td><td>Поисковый запрос</td></tr><tr><td><span class="pn">min_price</span></td><td>float</td><td>Мин. цена</td></tr><tr><td><span class="pn">max_price</span></td><td>float</td><td>Макс. цена</td></tr></table></div></div>
+
+<h3 style="margin:20px 0 12px">Компании <span class="tb tf">Free</span></h3>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/companies</span><span class="ep-d">Список компаний с пагинацией</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">limit</span></td><td>int</td><td>Кол-во (макс 100)</td></tr><tr><td><span class="pn">offset</span></td><td>int</td><td>Смещение</td></tr><tr><td><span class="pn">region</span></td><td>string</td><td>Регион</td></tr></table></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/companies/{id}</span><span class="ep-d">Информация о компании (UUID)</span></div></div>
+<h3 style="margin:20px 0 12px">Рыночные данные <span class="tb tf">Free</span></h3>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/categories</span><span class="ep-d">Категории строительства</span></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/regions</span><span class="ep-d">Регионы присутствия</span></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/stats</span><span class="ep-d">Общая статистика</span></div></div>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/compare</span><span class="ep-d">Сравнение компаний</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">ids</span> <span class="pr">required</span></td><td>string</td><td>UUID через запятую</td></tr></table></div></div>
+
+<h3 style="margin:20px 0 12px">Аналитика <span class="tb ts">Starter+</span></h3>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/analytics/market</span><span class="ep-d">Обзор рынка</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">region</span></td><td>string</td><td>Регион</td></tr><tr><td><span class="pn">category</span></td><td>string</td><td>Категория</td></tr></table></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/analytics/best-companies</span><span class="ep-d">Рейтинг лучших</span></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/analytics/price-comparison</span><span class="ep-d">Сравнение цен</span></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/analytics/report</span><span class="ep-d">Аналитический отчёт</span></div></div>
+<h3 style="margin:20px 0 12px">AI-инструменты <span class="tb tp">Pro+</span></h3>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/ai/reviews</span><span class="ep-d">AI-анализ отзывов</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">company_id</span></td><td>UUID</td><td>ID компании</td></tr></table><p style="color:var(--m);font-size:.82rem;margin-top:6px">sentiment, reliability_score, review_summary, red_flags</p></div></div>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/ai/recommend</span><span class="ep-d">AI-подбор подрядчиков</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">budget</span></td><td>float</td><td>Бюджет (руб)</td></tr><tr><td><span class="pn">region</span></td><td>string</td><td>Регион</td></tr><tr><td><span class="pn">category</span></td><td>string</td><td>Тип строительства</td></tr></table></div></div>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/ai/estimate</span><span class="ep-d">Оценка стоимости</span></div>
+<div class="ep-det"><table class="pt"><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">area</span></td><td>float</td><td>Площадь (кв.м)</td></tr><tr><td><span class="pn">region</span></td><td>string</td><td>Регион</td></tr><tr><td><span class="pn">material</span></td><td>string</td><td>Материал</td></tr></table></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/ai/trends</span><span class="ep-d">Тренды рынка</span></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/ai/deep-profile</span><span class="ep-d">Глубокий профиль компании</span></div></div>
+<div class="ep"><div class="ep-h"><span class="mt">GET</span><span class="ep-p">/api/v1/ai/region-compare</span><span class="ep-d">Сравнение регионов</span></div></div>
+<h3 style="margin:20px 0 12px">Аккаунт</h3>
+<div class="ep" onclick="this.classList.toggle('open')"><div class="ep-h"><span class="mt post">POST</span><span class="ep-p">/api/register</span><span class="ep-d">Регистрация API-ключа</span></div>
+<div class="ep-det"><p style="font-size:.85rem;color:var(--m);margin-bottom:6px">JSON body:</p><table class="pt"><tr><th>Поле</th><th>Тип</th><th>Описание</th></tr><tr><td><span class="pn">name</span> <span class="pr">required</span></td><td>string</td><td>Ваше имя</td></tr><tr><td><span class="pn">email</span> <span class="pr">required</span></td><td>string</td><td>Email</td></tr></table></div></div>
+</div></section>
+
+<section id="try" style="background:#fff"><div class="ctr"><h2>Попробуйте API</h2><p class="sub">Отправьте запрос прямо из браузера</p>
+<div class="try-s"><h3 style="margin-bottom:14px">Интерактивная песочница</h3>
+<div class="try-f">
+<select id="te"><option value="/api/v1/stats">GET /api/v1/stats</option><option value="/api/v1/categories">GET /api/v1/categories</option><option value="/api/v1/regions">GET /api/v1/regions</option><option value="/api/v1/search/companies?q=%D0%BA%D0%B0%D1%80%D0%BA%D0%B0%D1%81&limit=3">GET /search/companies?q=каркас</option><option value="/api/v1/companies?limit=3">GET /api/v1/companies?limit=3</option><option value="/api/v1/analytics/market">GET /analytics/market (Starter+)</option><option value="/api/v1/ai/trends">GET /ai/trends (Pro+)</option><option value="/api/v1/ai/recommend?budget=5000000">GET /ai/recommend (Pro+)</option></select>
+<input type="text" id="tk" placeholder="API-ключ (необязательно для Free)"/>
+<button class="try-btn" onclick="tryApi()">Отправить</button>
+</div><div id="try-r"></div></div></div></section>
+<section id="auth"><div class="ctr"><h2>Авторизация</h2><p class="sub">Как использовать API-ключ</p>
+<div style="background:var(--c);border:1px solid var(--b);border-radius:10px;padding:20px;margin-bottom:14px">
+<h4 style="margin-bottom:10px">Передача ключа</h4><p style="color:var(--m);font-size:.88rem;margin-bottom:10px">Параметр <code>api_key</code> в URL:</p>
+<div class="cb">GET /api/v1/search/companies?q=test&amp;<span class="ck">api_key</span>=<span class="cs">mcp_free_abc123</span></div></div>
+<div style="background:var(--c);border:1px solid var(--b);border-radius:10px;padding:20px">
+<h4 style="margin-bottom:10px">Лимиты</h4>
+<table class="pt"><tr><th>План</th><th>Лимит</th><th>Доступ</th></tr>
+<tr><td><span class="tb tf">Free</span></td><td>100/мес</td><td>Search, Companies, Market Data</td></tr>
+<tr><td><span class="tb ts">Starter</span></td><td>5 000/мес</td><td>+ Analytics</td></tr>
+<tr><td><span class="tb tp">Pro</span></td><td>50 000/мес</td><td>+ AI Tools</td></tr>
+<tr><td><span class="tb" style="background:#fee2e2;color:#991b1b">Enterprise</span></td><td>Безлимит</td><td>Все + SLA</td></tr></table></div>
+</div></section>
+
+<section id="err" style="background:#fff"><div class="ctr"><h2>Коды ошибок</h2><p class="sub">Стандартные ответы</p>
+<div style="background:var(--c);border:1px solid var(--b);border-radius:10px;padding:20px">
+<table class="pt"><tr><th>Код</th><th>Ошибка</th><th>Описание</th></tr>
+<tr><td><code>401</code></td><td>invalid_api_key</td><td>Неверный ключ</td></tr>
+<tr><td><code>403</code></td><td>plan_upgrade_required</td><td>Нужен более высокий план</td></tr>
+<tr><td><code>429</code></td><td>rate_limit_exceeded</td><td>Превышен лимит</td></tr>
+<tr><td><code>404</code></td><td>not_found</td><td>Не найдено</td></tr></table>
+<div class="cb" style="margin-top:14px">{"<span class="ck">error</span>": "<span class="cs">plan_upgrade_required</span>", "<span class="ck">required_plan</span>": "<span class="cs">starter</span>", "<span class="ck">upgrade_info</span>": "<span class="cs">Starter: 2990 руб/мес</span>"}</div>
+</div></div></section>
+<section id="mcp"><div class="ctr"><h2>MCP для AI-агентов</h2>
+<p class="sub">Подключите к Claude, GPT или другому AI-агенту через Model Context Protocol</p>
+<!-- MCP-DOCS:v2 start -->
+<div style="background:var(--c);border:1px solid var(--b);border-radius:10px;padding:20px;margin-bottom:18px">
+<p style="margin-bottom:14px"><strong>21 инструмент</strong> через MCP streamable-http transport:</p>
+<p style="color:var(--m);font-size:.83rem;line-height:1.6">
+search_companies, search_projects, get_company, get_project, get_categories, get_regions, get_stats, compare_companies, calculate_cost, request_quote, market_analytics, find_best_companies, price_comparison, company_portfolio, market_report, review_analysis, contractor_recommendation, project_estimator, trend_analyzer, company_deep_profile, region_comparison
+</p>
+</div>
+
+<h3 style="margin-top:18px;margin-bottom:10px">Endpoint</h3>
+<div class="cb"><span class="cs">https://mcp-market.ru/mcp/</span></div>
+
+<h3 style="margin-top:18px;margin-bottom:10px">Подключение из Claude Desktop</h3>
+<div class="cb">{"<span class="ck">mcpServers</span>": {"<span class="ck">mcp-market-russia</span>": {"<span class="ck">url</span>": "<span class="cs">https://mcp-market.ru/mcp/</span>"}}}</div>
+
+<h3 style="margin-top:18px;margin-bottom:10px">Прямой JSON-RPC (curl)</h3>
+<p style="color:var(--m);font-size:.85rem;margin-bottom:8px">1. <strong>initialize</strong> — получить session ID:</p>
+<div class="cb">curl -i -X POST https://mcp-market.ru/mcp/ \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d &#39;{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"my-agent","version":"1.0"}}}&#39;
+<span class="cc"># ответ содержит header: mcp-session-id: &lt;sid&gt;</span></div>
+
+<p style="color:var(--m);font-size:.85rem;margin-top:14px;margin-bottom:8px">2. <strong>notifications/initialized</strong> — подтвердить готовность:</p>
+<div class="cb">curl -X POST https://mcp-market.ru/mcp/ \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Session-Id: &lt;sid&gt;" \
+  -d &#39;{"jsonrpc":"2.0","method":"notifications/initialized"}&#39;</div>
+
+<p style="color:var(--m);font-size:.85rem;margin-top:14px;margin-bottom:8px">3. <strong>tools/list</strong> — получить список 21 инструмента:</p>
+<div class="cb">curl -X POST https://mcp-market.ru/mcp/ \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Session-Id: &lt;sid&gt;" \
+  -d &#39;{"jsonrpc":"2.0","id":2,"method":"tools/list"}&#39;</div>
+
+<p style="color:var(--m);font-size:.85rem;margin-top:14px;margin-bottom:8px">4. <strong>tools/call</strong> — вызвать инструмент (пример: поиск компаний):</p>
+<div class="cb">curl -X POST https://mcp-market.ru/mcp/ \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Session-Id: &lt;sid&gt;" \
+  -d &#39;{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"search_companies","arguments":{"query":"забор","limit":3}}}&#39;</div>
+
+<div style="background:#1a2332;border-left:3px solid #4a9eff;padding:12px 16px;margin-top:18px;border-radius:6px;font-size:.85rem">
+<strong>Важно:</strong> ответы возвращаются как Server-Sent Events (<code>text/event-stream</code>). Парсите строку, начинающуюся с <code>data: </code>, как JSON. Header <code>Mcp-Session-Id</code> обязателен для всех запросов после initialize.
+</div>
+<!-- MCP-DOCS:v2 end -->
+</div></section>
+
+<footer><div class="ctr">
+<p style="font-size:1.05rem;font-weight:600;opacity:1">MCP Market Russia API v3.1.1</p>
+<p>Каталог строительных компаний и проектов домов</p>
+<p style="margin-top:10px"><a href="/docs">Swagger UI</a> &middot; <a href="/api/v1/stats">Статистика</a> &middot; <a href="mailto:support@mcp-market.ru">Поддержка</a></p>
+<p style="margin-top:6px;font-size:.78rem">&copy; 2026 MCP Market Russia</p>
+</div></footer>
+
+<script>
+async function tryApi(){const e=document.getElementById('te').value,k=document.getElementById('tk').value,r=document.getElementById('try-r');r.style.display='block';r.textContent='Загрузка...';const s=e.includes('?')?'&':'?';const u=window.location.protocol+'//'+window.location.hostname+':8000'+e+(k?s+'api_key='+k:'');try{const f=await fetch(u);const d=await f.json();r.textContent=JSON.stringify(d,null,2)}catch(x){r.textContent='Ошибка: '+x.message}}
+document.querySelectorAll('.nav a').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));t&&t.scrollIntoView({behavior:'smooth',block:'start'})})});
+window.addEventListener('scroll',()=>{const ss=document.querySelectorAll('section[id]');const nl=document.querySelectorAll('.nav a');let c='';ss.forEach(s=>{if(window.scrollY>=s.offsetTop-100)c=s.id});nl.forEach(a=>{a.classList.toggle('a',a.getAttribute('href')==='#'+c)})});
+</script></body></html>

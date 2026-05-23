@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI-демо — MCP Market Russia</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b1220;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.hero{text-align:center;padding:40px 20px 20px}
+.hero h1{font-size:2rem;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:#94a3b8;margin-top:8px;font-size:1.1rem}
+.panel{background:#1e293b;border:1px solid #334155;border-radius:12px;max-width:720px;width:90%;padding:24px;margin:16px auto}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{background:#334155;border:1px solid #475569;border-radius:20px;padding:6px 14px;cursor:pointer;font-size:.9rem;color:#cbd5e1;transition:.2s}
+.chip:hover{background:#3b82f6;border-color:#3b82f6;color:#fff}
+.input-row{display:flex;gap:8px}
+.input-row input{flex:1;background:#0f172a;border:1px solid #475569;border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:1rem}
+.input-row input:focus{outline:none;border-color:#3b82f6}
+.input-row button{background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:1rem;cursor:pointer}
+.input-row button:hover{background:#2563eb}
+.input-row button:disabled{opacity:.5;cursor:wait}
+#output{margin-top:20px}
+.mcp-call{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px;font-family:monospace;font-size:.85rem;color:#60a5fa;margin-bottom:12px}
+.think{color:#94a3b8;padding:12px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.result-head{color:#22c55e;font-weight:600;margin-bottom:12px}
+.card{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:16px;margin-bottom:10px}
+.card h3{color:#f8fafc;margin-bottom:8px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:.75rem;padding:3px 8px;border-radius:4px;background:#1e293b;border:1px solid #475569;color:#94a3b8}
+.tag.rating{border-color:#eab308;color:#eab308}
+.tag.region{border-color:#8b5cf6;color:#c4b5fd}
+.tag.cat{border-color:#06b6d4;color:#67e8f9}
+.err{color:#ef4444;padding:12px}
+.cta{text-align:center;margin-top:24px;padding:20px;background:#1e293b;border:1px solid #334155;border-radius:12px;max-width:720px;width:90%}
+.cta p{color:#94a3b8;margin-bottom:12px}
+.cta a{display:inline-block;background:#3b82f6;color:#fff;text-decoration:none;padding:10px 24px;border-radius:8px;font-weight:600}
+.cta a:hover{background:#2563eb}
+footer{color:#475569;font-size:.8rem;padding:30px;text-align:center}
+</style>
+</head>
+<body>
+<div class="hero"><h1>AI-демо: поиск по каталогу</h1><p>Попробуйте как AI-агент ищет компании через MCP-протокол</p></div>
+<div class="panel">
+<div class="chips">
+<span class="chip" onclick="go(this)">Заборы в Краснодаре</span>
+<span class="chip" onclick="go(this)">Фасадные работы москва</span>
+<span class="chip" onclick="go(this)">Каркасные дома</span>
+<span class="chip" onclick="go(this)">Ремонт квартир спб</span>
+<span class="chip" onclick="go(this)">Кровельные работы</span>
+<span class="chip" onclick="go(this)">Ландшафтный дизайн</span>
+</div>
+<form class="input-row" onsubmit="return ask(event)">
+<input id="q" placeholder="Или введите свой запрос..." autocomplete="off">
+<button id="btn" type="submit">Найти</button>
+</form>
+<div id="output"></div>
+</div>
+
+<section id="claude-setup" style="max-width:900px;margin:32px auto;padding:28px;background:#1a1f2e;border:1px solid #2d3e6b;border-radius:16px;color:#e8ecf6">
+  <h2 style="margin:0 0 8px;font-size:22px">Как добавить MCP Market в Claude Desktop</h2>
+  <p style="margin:0 0 20px;color:#9ba3b8;font-size:14px">3 шага — и ваш AI-агент получит доступ к каталогу из 3 395 компаний с рейтингами и проектами.</p>
+  <div style="display:grid;grid-template-columns:1fr;gap:16px">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="flex:0 0 32px;height:32px;border-radius:50%;background:#ff7a3a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center">1</div>
+      <div><b>Откройте конфиг Claude Desktop.</b><br><span style="color:#9ba3b8;font-size:13px">macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code><br>Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code></span></div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="flex:0 0 32px;height:32px;border-radius:50%;background:#ff7a3a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center">2</div>
+      <div style="flex:1"><b>Вставьте блок mcpServers:</b>
+        <div style="position:relative;margin-top:8px">
+          <pre id="claude-cfg" style="background:#0a0e1a;padding:14px;border-radius:8px;overflow-x:auto;font-size:12px;color:#a7d8ff;margin:0"><code>{
+  "mcpServers": {
+    "mcp-market": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp-market.ru/mcp/"]
+    }
+  }
+}</code></pre>
+          <button onclick="copyClaudeCfg()" id="copy-cfg-btn" style="position:absolute;top:8px;right:8px;background:#2d3e6b;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer">Копировать</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="flex:0 0 32px;height:32px;border-radius:50%;background:#ff7a3a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center">3</div>
+      <div><b>Перезапустите Claude Desktop.</b><br><span style="color:#9ba3b8;font-size:13px">Спросите Claude: «Найди через mcp-market 3 лучших компании по установке заборов в Краснодаре» — получите живые данные с рейтингами.</span></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+    <a href="/mcp/" style="padding:10px 18px;background:#ff7a3a;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px">Подробнее про MCP endpoint</a>
+    <a href="/api-docs" style="padding:10px 18px;background:transparent;color:#e8ecf6;text-decoration:none;border:1px solid #2d3e6b;border-radius:8px;font-weight:600;font-size:14px">REST API (без Claude)</a>
+    <a href="https://t.me/Devavatar" target="_blank" rel="noopener" style="padding:10px 18px;background:transparent;color:#e8ecf6;text-decoration:none;border:1px solid #2d3e6b;border-radius:8px;font-weight:600;font-size:14px">Помощь с настройкой</a>
+  </div>
+</section>
+<script>
+function copyClaudeCfg(){
+  var txt = document.querySelector("#claude-cfg code").innerText;
+  navigator.clipboard.writeText(txt).then(function(){
+    var b = document.getElementById("copy-cfg-btn");
+    var old = b.textContent;
+    b.textContent = "Скопировано";
+    b.style.background = "#2d6b3e";
+    setTimeout(function(){ b.textContent = old; b.style.background = "#2d3e6b"; }, 1800);
+  });
+}
+</script>
+
+<div class="cta"><p>Понравилось? Подключи каталог к своему AI-агенту</p><a href="/mcp/">Подключить MCP →</a></div>
+<footer>mcp-market.ru — MCP-каталог строительных компаний России</footer>
+<script>
+const qEl=document.getElementById('q'),btn=document.getElementById('btn'),out=document.getElementById('output');
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function go(el){qEl.value=el.textContent;ask()}
+function renderCall(q,n){return '<div class="mcp-call">tools/call("search_companies",{query:"'+esc(q)+'",limit:'+n+'})</div>'}
+function renderCompany(c){let t='';if(c.rating)t+='<span class="tag rating">'+c.rating+'</span>';if(c.region)t+='<span class="tag region">'+esc(c.region)+'</span>';if(c.category)t+='<span class="tag cat">'+esc(c.category)+'</span>';if(c.website)t+='<span class="tag"><a href="'+esc(c.website)+'" target="_blank" style="color:#60a5fa;text-decoration:none">сайт</a></span>';if(c.phone)t+='<span class="tag">'+esc(c.phone)+'</span>';return '<div class="card"><h3>'+esc(c.name||'')+'</h3>'+(c.description?'<p style="color:#94a3b8;font-size:.9rem">'+esc(c.description).slice(0,200)+'</p>':'')+'<div class="tags">'+t+'</div></div>'}
+async function ask(e){if(e)e.preventDefault();const q=qEl.value.trim();if(!q)return false;btn.disabled=true;out.innerHTML=renderCall(q,3)+'<div class="think">Ищу компании...</div>';try{const r=await fetch('/api/v1/search/companies?q='+encodeURIComponent(q)+'&limit=10');const d=await r.json();const cards=(d.companies||[]).map(renderCompany).join('');out.innerHTML=renderCall(q,3)+'<div class="result-head">Найдено: '+d.total+'</div>'+cards;}catch(err){out.innerHTML='<div class="err">Ошибка: '+esc(String(err))+'</div>';}finally{btn.disabled=false;}return false;}
+</script>
+
+<section id="smart-match-demo" style="max-width:900px;margin:32px auto;padding:28px;background:#1a1f2e;border:1px solid #2d3e6b;border-radius:16px;color:#e8ecf0;">
+  <h2 style="margin:0 0 8px;font-size:22px">🧠 smart_match — попробуйте без регистрации</h2>
+  <p style="margin:0 0 20px;color:#9ba3b0;font-size:14px">Напишите задачу на русском — AI-парсер разберёт её на фильтры и найдёт подрядчиков из каталога 3 395 компаний.</p>
+  <label style="display:block;margin-bottom:8px;color:#9ba3b0;font-size:13px">Бриф:</label>
+  <textarea id="sm-brief" rows="2" style="width:100%;padding:12px;background:#0f1420;border:1px solid #2d3e6b;border-radius:8px;color:#e8ecf0;font-family:inherit;font-size:14px;resize:vertical;box-sizing:border-box">каркасный дом 180 кв.м в Подмосковье до 15 млн</textarea>
+  <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <button id="sm-go" style="padding:10px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px">Найти подрядчиков</button>
+    <span id="sm-status" style="color:#9ba3b0;font-size:13px"></span>
+  </div>
+  <div id="sm-result" style="margin-top:20px"></div>
+  <details style="margin-top:16px;font-size:12px;color:#6b7280">
+    <summary style="cursor:pointer">Примеры брифов</summary>
+    <ul style="margin:8px 0 0 20px;padding:0;list-style:disc">
+      <li style="cursor:pointer;margin:4px 0" onclick="document.getElementById('sm-brief').value=this.textContent">премиум коттедж в Краснодаре до 30 млн</li>
+      <li style="cursor:pointer;margin:4px 0" onclick="document.getElementById('sm-brief').value=this.textContent">строительство в Уфе бюджет 5 млн</li>
+      <li style="cursor:pointer;margin:4px 0" onclick="document.getElementById('sm-brief').value=this.textContent">дом в Подмосковье</li>
+    </ul>
+  </details>
+</section>
+<script>
+(function(){
+  const el = id => document.getElementById(id);
+  const brief = el('sm-brief'), btn = el('sm-go'), status = el('sm-status'), result = el('sm-result');
+  btn.addEventListener('click', async function(){
+    const q = brief.value.trim();
+    if (!q) return;
+    btn.disabled = true;
+    status.textContent = 'Ищем...';
+    result.innerHTML = '';
+    try {
+      const r = await fetch('/api/v1/smart-match?top_n=3&brief=' + encodeURIComponent(q));
+      const d = await r.json();
+      if (!r.ok) {
+        result.innerHTML = '<div style="color:#ef4444">Ошибка: ' + (d.error || r.status) + '</div>';
+      } else {
+        const p = d.parsed || {}, chips = [];
+        if (p.region) chips.push('регион: <b>' + p.region + '</b>');
+        if (p.category) chips.push('категория: <b>' + p.category + '</b>');
+        if (p.area_sqm) chips.push('площадь: <b>' + p.area_sqm + ' кв.м</b>');
+        if (p.budget_rub) chips.push('бюджет: <b>' + (p.budget_rub/1000000).toFixed(1) + ' млн ₽</b>');
+        if (p.quality && p.quality !== 'standard') chips.push('класс: <b>' + p.quality + '</b>');
+        let html = '<div style="padding:12px;background:#0f1420;border-radius:8px;margin-bottom:12px;font-size:13px"><div style="color:#9ba3b0;margin-bottom:6px">Распознано AI:</div>' + (chips.join(' · ') || '<i>параметры не распознаны</i>') + '</div>';
+        const m = d.matches || [];
+        if (m.length === 0) { html += '<div style="color:#9ba3b0">Подрядчики в каталоге не найдены по этим параметрам.</div>'; }
+        else {
+          html += '<div style="color:#9ba3b0;font-size:13px;margin-bottom:8px">Топ-' + m.length + ':</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tbody>';
+          m.forEach(c => { html += '<tr style="border-bottom:1px solid #2d3e6b"><td style="padding:10px 12px 10px 0"><b>' + (c.name || '—') + '</b><div style="color:#9ba3b0;font-size:12px">' + (c.city || '') + (c.region ? ', ' + c.region : '') + '</div></td><td style="padding:10px 0;text-align:right;white-space:nowrap">' + (c.rating ? c.rating + '★' : '—') + '<div style="color:#9ba3b0;font-size:12px">' + (c.reviews_count || 0) + ' отзывов</div></td></tr>'; });
+          html += '</tbody></table>';
+        }
+        result.innerHTML = html;
+      }
+      status.textContent = 'Готово · /api/v1/smart-match';
+    } catch(e) { result.innerHTML = '<div style="color:#ef4444">Ошибка сети: ' + e.message + '</div>'; status.textContent = ''; }
+    finally { btn.disabled = false; }
+  });
+})();
+</script>
+
+</body>
+</html>

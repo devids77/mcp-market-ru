@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mcp-db
+    restart: always
+    environment:
+      POSTGRES_DB: mcpmarket
+      POSTGRES_USER: mcpuser
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-McpMarket2026Secure}
+    volumes:
+    - pgdata:/var/lib/postgresql/data
+    - ./migrations:/docker-entrypoint-initdb.d
+    ports:
+    - 127.0.0.1:5432:5432
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U mcpuser -d mcpmarket
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  mcp-server:
+    build: .
+    container_name: mcp-server
+    env_file: .env
+    restart: always
+    ports:
+    - 0.0.0.0:8000:8000
+    environment:
+      DATABASE_URL: postgresql+asyncpg://mcpuser:${DB_PASSWORD:-McpMarket2026Secure}@db:5432/mcpmarket
+      DATABASE_URL_SYNC: postgresql://mcpuser:${DB_PASSWORD:-McpMarket2026Secure}@db:5432/mcpmarket
+      SERVER_NAME: MCP Market Russia
+      SERVER_URL: https://mcp-market.ru
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+    - ./app:/app/app
+    command:
+    - uvicorn
+    - app.main:app
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8000'
+    - --workers
+    - '1'
+volumes:
+  pgdata: null

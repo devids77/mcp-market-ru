@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тарифы - MCP Market Russia</title>
+    <!-- SEO:v2 start -->
+    <meta name="description" content="Тарифы MCP Market Russia: free / pro / enterprise. API к 3395 компаниям и 13436 проектам строительного рынка России. 21 MCP-инструмент для AI-агентов.">
+    <meta name="keywords" content="MCP тарифы, API стройрынок России, цены MCP Market, подписка для AI-агентов, Claude Desktop, LLM API, строительные компании">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="author" content="MCP Market">
+    <link rel="canonical" href="https://mcp-market.ru/pricing.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="MCP Market">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:title" content="Тарифы MCP Market Russia — API для AI-агентов">
+    <meta property="og:description" content="Free / Pro / Enterprise. 3 395 компаний, 13 436 проектов, 21 MCP-инструмент для Claude Desktop, Cursor и Windsurf.">
+    <meta property="og:url" content="https://mcp-market.ru/pricing.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Тарифы MCP Market Russia">
+    <meta name="twitter:description" content="Free / Pro / Enterprise. MCP API к 3395 компаниям стройрынка РФ для AI-агентов.">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "MCP Market Russia API",
+      "description": "MCP сервер для AI-агентов: доступ к 3 395 компаниям и 13 436 проектам строительного рынка России через 21 инструмент.",
+      "brand": {"@type": "Brand", "name": "MCP Market"},
+      "offers": [
+        {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "RUB", "url": "https://mcp-market.ru/pricing.html", "availability": "https://schema.org/InStock"},
+        {"@type": "Offer", "name": "Pro", "price": "2900", "priceCurrency": "RUB", "url": "https://mcp-market.ru/pricing.html", "availability": "https://schema.org/InStock"},
+        {"@type": "Offer", "name": "Enterprise", "priceCurrency": "RUB", "url": "https://mcp-market.ru/pricing.html", "availability": "https://schema.org/InStock"}
+      ]
+    }</script>
+    <!-- SEO:v2 end -->
+
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --surface: #111827;
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --accent-gold: #f59e0b;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 26, 0.8);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .logo-badge {
+            font-size: 0.65rem;
+            background: var(--accent-gold);
+            color: #000;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .nav-center a {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-center a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border-subtle);
+            padding: 3rem 2rem 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Sections */
+        section {
+            padding: 3rem 0;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-center {
+                flex: auto;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: center;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            section {
+                padding: 2rem 0;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+        
+
+        main {
+            min-height: calc(100vh - 200px);
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .pricing-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .plan {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .plan:hover {
+            border-color: var(--border-hover);
+        }
+
+        .plan.popular {
+            border-color: var(--accent-gold);
+            background: rgba(245, 158, 11, 0.05);
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: var(--accent-gold);
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 0.25rem;
+        }
+
+        .plan-period {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .plan-features {
+            flex: 1;
+            margin-bottom: 2rem;
+        }
+
+        .plan-feature {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .plan-feature::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .plan-feature.disabled {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .plan-feature.disabled::before {
+            content: "✕";
+            color: var(--error);
+        }
+
+        .plan-cta {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .plan-cta-primary {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .plan-cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .plan-cta-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .plan-cta-secondary:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .faq-section {
+            max-width: 800px;
+            margin: 4rem auto;
+        }
+
+        .faq-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .faq-item {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .faq-question.open {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .faq-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-question.open .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-answer.open {
+            max-height: 500px;
+        }
+
+        .faq-answer-content {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .payment-methods {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            margin-top: 3rem;
+        }
+
+        .payment-methods p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .payment-icons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .payment-icon {
+            background: var(--surface);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        @media (max-width: 768px) {
+            .plan.popular {
+                transform: scale(1);
+            }
+
+            .plans-grid {
+                gap: 1.5rem;
+            }
+
+            .pricing-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .faq-section {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    MCP Market
+                    <span class="logo-badge">Russia</span>
+                </div>
+                <nav class="nav-center">
+                    <a href="/">Главная</a>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/api-docs" target="_blank">Документация</a>
+                    <a href="/dashboard">Дашборд</a>
+                </nav>
+                <div class="nav-right">
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                </div>
+            </div>
+        </header>
+        
+
+    <main class="container" style="padding-top: 2rem;">
+        <section class="pricing-header">
+            <h1>Простые и прозрачные тарифы</h1>
+            <p>Выберите подходящий план для вашего проекта или масштабируйте по мере роста</p>
+        </section>
+
+        <section>
+            <div class="plans-grid">
+                <div class="plan">
+                    <h3 class="plan-name">Free</h3>
+                    <div class="plan-price">0₽</div>
+                    <div class="plan-period">Всегда бесплатно</div>
+                    <div class="plan-features">
+                        <div class="plan-feature">100 запросов/день</div>
+                        <div class="plan-feature">21 инструмент</div>
+                        <div class="plan-feature">Базовый поиск</div>
+                        <div class="plan-feature">Общая поддержка</div>
+                        <div class="plan-feature disabled">История данных</div>
+                        <div class="plan-feature disabled">Экспорт в CSV/Excel</div>
+                        <div class="plan-feature disabled">API аналитика</div>
+                    </div>
+                    <button class="plan-cta plan-cta-secondary" onclick="window.location.href='/login'">Начать бесплатно</button>
+                </div>
+
+                <div class="plan"><h3 class="plan-name">Starter</h3><div class="plan-price">2 990₽</div><div class="plan-period">в месяц</div><div class="plan-features"><div class="plan-feature">1 000 запросов/день</div><div class="plan-feature">21 инструмент + аналитика</div><div class="plan-feature">Расширенный поиск</div><div class="plan-feature">Экспорт CSV/Excel</div><div class="plan-feature disabled">AI Tools (только Pro)</div></div><button class="plan-cta" onclick="window.location.href='/pay?plan=starter'">Выбрать Starter</button></div><!-- STARTER_DONE --><div class="plan popular">
+                    <div class="plan-badge">Популярный</div>
+                    <h3 class="plan-name">Pro</h3>
+                    <div class="plan-price">7 990₽</div>
+                    <div class="plan-period">в месяц, можно отменить в любой момент</div>
+                    <div class="plan-features">
+                        <div class="plan-feature">5 000 запросов/день</div>
+                        <div class="plan-feature">21 инструмент</div>
+                        <div class="plan-feature">Продвинутый поиск и фильтры</div>
+                        <div class="plan-feature">Приоритетная поддержка</div>
+                        <div class="plan-feature">История данных (3 мес)</div>
+                        <div class="plan-feature">Экспорт в CSV/Excel</div>
+                        <div class="plan-feature">API аналитика и отчёты</div>
+                    </div>
+                    <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pay?plan=pro'">Подключить Pro</button>
+                </div>
+
+                <div class="plan">
+                    <h3 class="plan-name">Enterprise</h3>
+                    <div class="plan-price">Custom</div>
+                    <div class="plan-period">Индивидуальное предложение</div>
+                    <div class="plan-features">
+                        <div class="plan-feature">Безлимит запросов</div>
+                        <div class="plan-feature">Все инструменты + custom</div>
+                        <div class="plan-feature">Выделенная команда поддержки</div>
+                        <div class="plan-feature">SLA гарантии 99.9%</div>
+                        <div class="plan-feature">История данных (не ограничена)</div>
+                        <div class="plan-feature">Белый лейбл</div>
+                        <div class="plan-feature">Интеграция и консалтинг</div>
+                    </div>
+                    <button class="plan-cta plan-cta-secondary" onclick="window.location.href='/pricing#contact'">Связаться</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq-section">
+            <h2 class="faq-title">Часто задаваемые вопросы</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Как долго пробный период?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Все пользователи начинают с бесплатного тариф без ограничений по времени. Вы можете использовать 100 запросов в день и 21 инструмент неопределённое время. Для большего нужен платный тариф.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Можно ли отменить подписку?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Да, вы можете отменить подписку в любой момент в своём личном кабинете. Доступ прекратится в конце текущего платежного периода.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Есть ли скидки для годовой подписки?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Да, при оплате на год вперёд вы получаете 20% скидку. Это самый выгодный вариант для длительного использования платформы.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Какая поддержка включена в каждый тариф?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Free и Pro тарифы включают общую поддержку по email (время ответа 24-48 часов). Enterprise получает выделенную команду с SLA гарантией.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Что произойдёт если я превышу лимит запросов?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Запросы сверх лимита будут отклонены с ошибкой 429 (Too Many Requests). Мы рекомендуем следить за использованием в дашборде и переходить на больший тариф при необходимости.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="payment-methods">
+            <p><strong>Методы оплаты:</strong></p>
+            <div class="payment-icons">
+                <div class="payment-icon">💳 Карта (Visa, Mastercard)</div>
+                <div class="payment-icon">₿ Bitcoin (BTC)</div>
+                <div class="payment-icon">Ξ Ethereum (ETH)</div>
+                <div class="payment-icon">₮ Tether (USDT)</div>
+                <div class="payment-icon">📄 По счёту</div>
+            </div>
+        </div>
+    </main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>Продукт</h4>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/dashboard">Дашборд</a>
+                    <a href="/demo">Живое демо</a></div>
+                <div class="footer-section">
+                    <h4>Разработчикам</h4>
+                    <a href="/api-docs">API документация</a>
+                    <a href="/mcp/">MCP endpoint</a>
+                    <a href="/login">Получить API-ключ</a>
+                    <a href="/sitemap.xml">Sitemap</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Ресурсы</h4>
+                    <a href="/api-docs#rest">REST API</a>
+                    <a href="/api-docs#mcp">MCP JSON-RPC</a>
+                    <a href="/demo">Примеры вызовов</a>
+                    <a href="/robots.txt">robots.txt</a>
+                        <a href="/legal/offer">Оферта</a>
+                        <a href="/legal/privacy">Конфиденциальность</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Контакты</h4>
+                    <a href="mailto:info@mcp-market.ru">info@mcp-market.ru</a>
+                    <a href="https://t.me/Devavatar" target="_blank" rel="noopener">Telegram</a>
+                    <a href="/demo">Живое демо</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 MCP Market Russia. API строительного рынка России.</span>
+            </div>
+        </div>
+    </footer>
+<script>
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        @keyframes slideOut {
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        // Check login status
+        function checkLogin() {
+            return !!localStorage.getItem('auth_token');
+        }
+
+        function getAuthToken() {
+            return localStorage.getItem('auth_token');
+        }
+
+        function setAuthToken(token) {
+            localStorage.setItem('auth_token', token);
+        }
+
+        function clearAuthToken() {
+            localStorage.removeItem('auth_token');
+        }
+
+        function getUserEmail() {
+            return localStorage.getItem('user_email');
+        }
+
+        function setUserEmail(email) {
+            localStorage.setItem('user_email', email);
+        }
+
+        // Update header based on login status
+        function updateHeaderAuthStatus() {
+            const navRight = document.querySelector('.nav-right');
+            if (!navRight) return;
+
+            const isLoggedIn = checkLogin();
+            const userEmail = getUserEmail();
+
+            navRight.innerHTML = isLoggedIn
+                ? `
+                    <div class="user-info">
+                        <span class="user-email">${userEmail}</span>
+                    </div>
+                    <a href="/dashboard" class="btn btn-ghost">Личный кабинет</a>
+                    <button onclick="logout()" class="btn btn-ghost">Выход</button>
+                `
+                : `
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                `;
+        }
+
+        function logout() {
+            clearAuthToken();
+            setUserEmail('');
+            showToast('Вы вышли из аккаунта', 'info');
+            setTimeout(() => window.location.href = '/', 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', updateHeaderAuthStatus);
+        </script>
+        
+
+    <script>
+    function toggleFaq(element) {
+        const question = element;
+        const answer = element.nextElementSibling;
+
+        question.classList.toggle('open');
+        answer.classList.toggle('open');
+    }
+    </script>
+</body>
+</html>
+        

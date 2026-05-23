@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Администратор - MCP Market Russia</title>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --surface: #111827;
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --accent-gold: #f59e0b;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 26, 0.8);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .logo-badge {
+            font-size: 0.65rem;
+            background: var(--accent-gold);
+            color: #000;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .nav-center a {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-center a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border-subtle);
+            padding: 3rem 2rem 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Sections */
+        section {
+            padding: 3rem 0;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-center {
+                flex: auto;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: center;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            section {
+                padding: 2rem 0;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+        
+
+        main {
+            min-height: calc(100vh - 200px);
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 3rem;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .admin-stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .admin-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            margin: 2rem 0 1rem;
+            overflow-x: auto;
+        }
+
+        .admin-tab {
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .admin-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .admin-tab.active {
+            color: var(--accent-gold);
+            border-bottom-color: var(--accent-gold);
+        }
+
+        .admin-tab-content {
+            display: none;
+        }
+
+        .admin-tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            margin: 1.5rem 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-gold);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-confirm {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .modal-btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 2rem;
+            }
+
+            .admin-tabs {
+                flex-wrap: wrap;
+            }
+
+            .admin-tab {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    MCP Market
+                    <span class="logo-badge">Russia</span>
+                </div>
+                <nav class="nav-center">
+                    <a href="/">Главная</a>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/api-docs" target="_blank">Документация</a>
+                    <a href="/dashboard">Дашборд</a>
+                </nav>
+                <div class="nav-right">
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                </div>
+            </div>
+        </header>
+        
+
+    <main class="container admin-container">
+        <!-- Login Screen -->
+        <div class="login-screen" id="login-screen">
+            <div class="login-card">
+                <h2>🔐 Панель администратора</h2>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="admin-password" class="form-input" placeholder="Введите пароль">
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="adminLogin()">Войти</button>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel" id="admin-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 2rem 0;">
+                <h1>Администраторская панель</h1>
+                <button class="btn btn-ghost" onclick="adminLogout()">Выход</button>
+            </div>
+
+            <div class="admin-stats">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value" id="stat-users">--</div>
+                    <div>Пользователей</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value" id="stat-revenue">--</div>
+                    <div>Доход</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value" id="stat-api-calls">--</div>
+                    <div>API запросов</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value" id="stat-uptime">--</div>
+                    <div>Uptime</div>
+                </div>
+            </div>
+
+            <div class="admin-tabs">
+                <div class="admin-tab active" onclick="switchAdminTab(this, 'keys')">🔑 API Ключи</div>
+                <div class="admin-tab" onclick="switchAdminTab(this, 'usage')">📊 Использование</div>
+                <div class="admin-tab" onclick="switchAdminTab(this, 'payments')">💳 Платежи</div>
+                <div class="admin-tab" onclick="switchAdminTab(this, 'leads')">👥 Лиды</div>
+            </div>
+
+            <div class="admin-tab-content active" id="keys-content">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>API Ключ</th>
+                                <th>План</th>
+                                <th>Статус</th>
+                                <th>Создан</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keys-tbody">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-tab-content" id="usage-content">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Запросов/день</th>
+                                <th>Использовано</th>
+                                <th>Процент</th>
+                                <th>План</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usage-tbody">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-tab-content" id="payments-content">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Сумма</th>
+                                <th>Метод</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payments-tbody">
+                            <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-tab-content" id="leads-content">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Имя</th>
+                                <th>Email</th>
+                                <th>Компания</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-tbody">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">Подтверждение</h3>
+            <p id="modal-message"></p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отменить</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmAction()">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>Продукт</h4>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/dashboard">Дашборд</a>
+                    <a href="/demo">Живое демо</a></div>
+                <div class="footer-section">
+                    <h4>Разработчикам</h4>
+                    <a href="/api-docs">API документация</a>
+                    <a href="/mcp/">MCP endpoint</a>
+                    <a href="/login">Получить API-ключ</a>
+                    <a href="/sitemap.xml">Sitemap</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Ресурсы</h4>
+                    <a href="/api-docs#rest">REST API</a>
+                    <a href="/api-docs#mcp">MCP JSON-RPC</a>
+                    <a href="/demo">Примеры вызовов</a>
+                    <a href="/robots.txt">robots.txt</a>
+                        <a href="/legal/offer">Оферта</a>
+                        <a href="/legal/privacy">Конфиденциальность</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Контакты</h4>
+                    <a href="mailto:info@mcp-market.ru">info@mcp-market.ru</a>
+                    <a href="https://t.me/Devavatar" target="_blank" rel="noopener">Telegram</a>
+                    <a href="/demo">Живое демо</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 MCP Market Russia. API строительного рынка России.</span>
+            </div>
+        </div>
+    </footer>
+<script>
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        @keyframes slideOut {
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        // Check login status
+        function checkLogin() {
+            return !!localStorage.getItem('auth_token');
+        }
+
+        function getAuthToken() {
+            return localStorage.getItem('auth_token');
+        }
+
+        function setAuthToken(token) {
+            localStorage.setItem('auth_token', token);
+        }
+
+        function clearAuthToken() {
+            localStorage.removeItem('auth_token');
+        }
+
+        function getUserEmail() {
+            return localStorage.getItem('user_email');
+        }
+
+        function setUserEmail(email) {
+            localStorage.setItem('user_email', email);
+        }
+
+        // Update header based on login status
+        function updateHeaderAuthStatus() {
+            const navRight = document.querySelector('.nav-right');
+            if (!navRight) return;
+
+            const isLoggedIn = checkLogin();
+            const userEmail = getUserEmail();
+
+            navRight.innerHTML = isLoggedIn
+                ? `
+                    <div class="user-info">
+                        <span class="user-email">${userEmail}</span>
+                    </div>
+                    <a href="/dashboard" class="btn btn-ghost">Личный кабинет</a>
+                    <button onclick="logout()" class="btn btn-ghost">Выход</button>
+                `
+                : `
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                `;
+        }
+
+        function logout() {
+            clearAuthToken();
+            setUserEmail('');
+            showToast('Вы вышли из аккаунта', 'info');
+            setTimeout(() => window.location.href = '/', 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', updateHeaderAuthStatus);
+        </script>
+        
+
+    <script>
+    const ADMIN_PASSWORD = 'admin123'; // Очень простой пароль для примера!
+
+    function adminLogin() {
+        const password = document.getElementById('admin-password').value;
+        if (password === ADMIN_PASSWORD) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            localStorage.setItem('admin_logged_in', 'true');
+            loadAdminData();
+        } else {
+            showToast('Неверный пароль', 'error');
+        }
+    }
+
+    function adminLogout() {
+        localStorage.removeItem('admin_logged_in');
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('admin-password').value = '';
+    }
+
+    function switchAdminTab(element, tabName) {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+
+        element.classList.add('active');
+        document.getElementById(tabName + '-content').classList.add('active');
+    }
+
+    async function loadAdminData() {
+        try {
+            // Load API keys
+            const keysRes = await fetch('/api/keys');
+            const keys = await keysRes.json();
+            renderKeys(keys);
+
+            // Load usage stats
+            const usageRes = await fetch('/api/usage/stats');
+            const usage = await usageRes.json();
+            renderUsage(usage);
+
+            // Load payments
+            const paymentsRes = await fetch('/api/payments');
+            const payments = await paymentsRes.json();
+            renderPayments(payments);
+
+            // Load leads
+            const leadsRes = await fetch('/api/leads');
+            const leads = await leadsRes.json();
+            renderLeads(leads);
+
+            // Load dashboard stats
+            const statsRes = await fetch('/api/dashboard/stats');
+            const stats = await statsRes.json();
+            document.getElementById('stat-users').textContent = stats.users || '0';
+            document.getElementById('stat-revenue').textContent = (stats.revenue || 0).toLocaleString('ru') + '₽';
+            document.getElementById('stat-api-calls').textContent = (stats.api_calls || 0).toLocaleString('ru');
+            document.getElementById('stat-uptime').textContent = stats.uptime || '99.9%';
+        } catch (error) {
+            console.error('Error loading admin data:', error);
+            showToast('Ошибка загрузки данных', 'error');
+        }
+    }
+
+    function renderKeys(keys) {
+        const tbody = document.getElementById('keys-tbody');
+        tbody.innerHTML = keys.map(key => `
+            <tr>
+                <td>${key.email}</td>
+                <td><code style="font-size: 0.85rem;">${key.key.substring(0, 8)}...</code></td>
+                <td>${key.plan}</td>
+                <td><span class="badge ${key.active ? 'active' : 'inactive'}">${key.active ? 'Активен' : 'Неактивен'}</span></td>
+                <td>${new Date(key.created_at).toLocaleDateString('ru')}</td>
+            </tr>
+        `).join('');
+    }
+
+    function renderUsage(usage) {
+        const tbody = document.getElementById('usage-tbody');
+        tbody.innerHTML = usage.map(u => {
+            const percent = Math.round((u.used / u.limit) * 100);
+            return `
+                <tr>
+                    <td>${u.email}</td>
+                    <td>${u.limit}</td>
+                    <td>${u.used}</td>
+                    <td>${percent}%</td>
+                    <td>${u.plan}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderPayments(payments) {
+        const tbody = document.getElementById('payments-tbody');
+        tbody.innerHTML = payments.map(p => `
+            <tr>
+                <td>${p.email}</td>
+                <td>${p.amount.toLocaleString('ru')}₽</td>
+                <td>${p.method}</td>
+                <td><span class="badge ${p.status === 'confirmed' ? 'active' : 'pending'}">${p.status}</span></td>
+                <td>${new Date(p.created_at).toLocaleDateString('ru')}</td>
+                <td><button class="btn btn-ghost" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" onclick="confirmPayment('${p.id}')">Подтв.</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderLeads(leads) {
+        const tbody = document.getElementById('leads-tbody');
+        tbody.innerHTML = leads.map(l => `
+            <tr>
+                <td>${l.name}</td>
+                <td>${l.email}</td>
+                <td>${l.company}</td>
+                <td><span class="badge pending">Новый</span></td>
+                <td>${new Date(l.created_at).toLocaleDateString('ru')}</td>
+            </tr>
+        `).join('');
+    }
+
+    function confirmPayment(paymentId) {
+        document.getElementById('modal-title').textContent = 'Подтвердить платёж?';
+        document.getElementById('modal-message').textContent = 'Введите хеш транзакции для подтверждения платежа';
+        document.getElementById('confirm-modal').classList.add('open');
+        window.currentPaymentId = paymentId;
+    }
+
+    function closeModal() {
+        document.getElementById('confirm-modal').classList.remove('open');
+    }
+
+    async function confirmAction() {
+        if (window.currentPaymentId) {
+            try {
+                const res = await fetch(`/api/payments/${window.currentPaymentId}/confirm`, { method: 'POST' });
+                if (res.ok) {
+                    showToast('Платёж подтвержден', 'success');
+                    closeModal();
+                    loadAdminData();
+                } else {
+                    showToast('Ошибка подтверждения', 'error');
+                }
+            } catch (error) {
+                showToast('Ошибка обработки', 'error');
+            }
+        }
+    }
+
+    // Check if admin is logged in
+    window.addEventListener('load', () => {
+        if (localStorage.getItem('admin_logged_in') !== 'true') {
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('admin-panel').style.display = 'none';
+        } else {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            loadAdminData();
+        }
+    });
+    </script>
+</body>
+</html>
+        

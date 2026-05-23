@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата - MCP Market Russia</title>
+    <style>
+/* CRYPTO_HID */
+.crypto-section,.crypto-label,.crypto-value,.crypto-form,[class*=crypto-]{display:none!important;}
+
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --surface: #111827;
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --accent-gold: #f59e0b;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 26, 0.8);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .logo-badge {
+            font-size: 0.65rem;
+            background: var(--accent-gold);
+            color: #000;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .nav-center a {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-center a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border-subtle);
+            padding: 3rem 2rem 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Sections */
+        section {
+            padding: 3rem 0;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-center {
+                flex: auto;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: center;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            section {
+                padding: 2rem 0;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+        
+
+        main {
+            min-height: calc(100vh - 200px);
+        }
+
+        .pay-container {
+            max-width: 700px;
+            margin: 2rem auto;
+        }
+
+        .wizard {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .wizard-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .wizard-steps {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-indicator {
+            flex: 1;
+            text-align: center;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-indicator.active .step-number {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .step-indicator.active .step-label {
+            color: var(--text-primary);
+        }
+
+        .wizard-content {
+            padding: 2rem;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .plan-cards {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .plan-option {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .plan-option:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .plan-option.selected {
+            border-color: var(--accent-gold);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .plan-option-radio {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-subtle);
+            border-radius: 50%;
+        }
+
+        .plan-option.selected .plan-option-radio {
+            border-color: var(--accent-gold);
+            background: var(--accent-gold);
+        }
+
+        .plan-option-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-option-price {
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-option-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .payment-method-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-tab {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .payment-tab:hover {
+            border-color: var(--border-hover);
+        }
+
+        .payment-tab.active {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--accent-gold);
+        }
+
+        .summary-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .summary-row.total {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-gold);
+        }
+
+        .crypto-details {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .crypto-field {
+            margin-bottom: 1rem;
+        }
+
+        .crypto-label {
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .crypto-value {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem;
+            border-radius: 4px;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .timer {
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .wizard-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-next {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-prev {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-prev:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .btn-prev:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-method-tabs {
+                flex-direction: column;
+            }
+
+            .step-label {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    MCP Market
+                    <span class="logo-badge">Russia</span>
+                </div>
+                <nav class="nav-center">
+                    <a href="/">Главная</a>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/api-docs" target="_blank">Документация</a>
+                    <a href="/dashboard">Дашборд</a>
+                </nav>
+                <div class="nav-right">
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                </div>
+            </div>
+        </header>
+        
+
+    <main class="container">
+        <div class="pay-container">
+            <div class="wizard">
+                <div class="wizard-header">
+                    <div class="wizard-steps">
+                        <div class="step-indicator active" id="indicator-1">
+                            <div class="step-number">1</div>
+                            <div class="step-label">Тариф</div>
+                        </div>
+                        <div class="step-indicator" id="indicator-2">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Данные</div>
+                        </div>
+                        <div class="step-indicator" id="indicator-3">
+                            <div class="step-number">3</div>
+                            <div class="step-label">Оплата</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-content">
+                    <!-- Step 1: Plan Selection -->
+                    <div class="step active" id="step-1">
+                        <h3 style="margin-bottom: 1.5rem;">Выберите тариф</h3>
+                        <div class="plan-cards">
+                            <div class="plan-option selected" onclick="selectPlan(this, 'free', 0)">
+                                <div class="plan-option-radio"></div>
+                                <div class="plan-option-name">Free</div>
+                                <div class="plan-option-price">0₽</div>
+                                <div class="plan-option-desc">100 запросов/день, 21 инструмент</div>
+                            </div>
+<div class="plan-option" onclick="selectPlan(this, 'starter', 2990)"><div class="plan-option-title">Starter</div><div class="plan-option-price">2 990₽/мес</div><div class="plan-option-desc">1 000 запросов/день, 21 инструмент + аналитика</div></div><!-- STARTER_OPT_DONE -->                            <div class="plan-option" onclick="selectPlan(this, 'pro', 7990)">
+                                <div class="plan-option-radio"></div>
+                                <div class="plan-option-name">Pro — Популярный</div>
+                                <div class="plan-option-price">7 990₽/мес</div>
+                                <div class="plan-option-desc">5000 запросов/день, 21 инструмент, аналитика</div>
+                            </div>
+                            <div class="plan-option" onclick="selectPlan(this, 'enterprise', 24990)">
+                                <div class="plan-option-radio"></div>
+                                <div class="plan-option-name">Enterprise</div>
+                                <div class="plan-option-price">24 990₽/мес</div>
+                                <div class="plan-option-desc">Безлимит, выделенная поддержка, SLA</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Contact Info -->
+                    <div class="step" id="step-2">
+                        <h3 style="margin-bottom: 1.5rem;">Ваши данные</h3>
+
+                        <div class="form-group">
+                            <label class="form-label">Имя</label>
+                            <input type="text" id="name" class="form-input" placeholder="Ваше имя">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="email" class="form-input" placeholder="your@email.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Компания</label>
+                            <input type="text" id="company" class="form-input" placeholder="Название компании">
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h4 style="margin-bottom: 1rem;">Способ оплаты</h4>
+                            <div class="payment-method-tabs">
+                                <div class="payment-tab active" onclick="selectPaymentMethod(this, 'card')">
+                                    💳 Карта
+                                </div>
+                                <div class="payment-tab" onclick="selectPaymentMethod(this, 'crypto')">
+                                    ₿ Крипто (скоро)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Payment -->
+                    <div class="step" id="step-3">
+                        <h3 style="margin-bottom: 1.5rem;">Завершите платёж</h3>
+
+                        <div class="summary-box">
+                            <div class="summary-row">
+                                <span id="summary-plan">Pro</span>
+                                <span id="summary-price">7 990₽</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Период</span>
+                                <span>1 месяц</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Налог</span>
+                                <span id="summary-tax">0₽</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Итого</span>
+                                <span id="summary-total">7 990₽</span>
+                            </div>
+                        </div>
+
+                        <div id="payment-card" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Номер карты</label>
+                                <input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Срок</label>
+                                    <input type="text" class="form-input" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">CVV</label>
+                                    <input type="text" class="form-input" placeholder="123" maxlength="3">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="payment-crypto" style="display: none;">
+                            <div class="crypto-details">
+                                <div class="crypto-field">
+                                    <label class="crypto-label">Отправить на адрес:</label>
+                                    <div class="crypto-value">
+                                        <span id="crypto-address">1A1z7agoat2LWQLZAXCJ7YKLhNrGkNvQZT</span>
+                                        <button class="copy-btn" onclick="copyCrypto('crypto-address')">Копировать</button>
+                                    </div>
+                                </div>
+                                <div class="crypto-field">
+                                    <label class="crypto-label">Сумма:</label>
+                                    <div class="crypto-value">
+                                        <span id="crypto-amount">0.00025 BTC</span>
+                                        <button class="copy-btn" onclick="copyCrypto('crypto-amount')">Копировать</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                                ⚠️ Отправьте ровно указанную сумму на адрес выше. Переводы обрабатываются в течение 10-30 минут.
+                            </div>
+                        </div>
+
+                        <div class="timer" id="timer">⏱️ Предложение действительно 15:00</div>
+                    </div>
+                </div>
+
+                <div style="padding: 0 2rem 2rem; border-top: 1px solid var(--border-subtle);">
+                    <div class="wizard-actions">
+                        <button class="btn-action btn-prev" id="prev-btn" onclick="previousStep()" disabled>← Назад</button>
+                        <button class="btn-action btn-next" id="next-btn" onclick="nextStep()">Далее →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>Продукт</h4>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/dashboard">Дашборд</a>
+                    <a href="/demo">Живое демо</a></div>
+                <div class="footer-section">
+                    <h4>Разработчикам</h4>
+                    <a href="/api-docs">API документация</a>
+                    <a href="/mcp/">MCP endpoint</a>
+                    <a href="/login">Получить API-ключ</a>
+                    <a href="/sitemap.xml">Sitemap</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Ресурсы</h4>
+                    <a href="/api-docs#rest">REST API</a>
+                    <a href="/api-docs#mcp">MCP JSON-RPC</a>
+                    <a href="/demo">Примеры вызовов</a>
+                    <a href="/robots.txt">robots.txt</a>
+                        <a href="/legal/offer">Оферта</a>
+                        <a href="/legal/privacy">Конфиденциальность</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Контакты</h4>
+                    <a href="mailto:info@mcp-market.ru">info@mcp-market.ru</a>
+                    <a href="https://t.me/Devavatar" target="_blank" rel="noopener">Telegram</a>
+                    <a href="/demo">Живое демо</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 MCP Market Russia. API строительного рынка России.</span>
+            </div>
+        </div>
+    </footer>
+<script>
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        @keyframes slideOut {
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        // Check login status
+        function checkLogin() {
+            return !!localStorage.getItem('auth_token');
+        }
+
+        function getAuthToken() {
+            return localStorage.getItem('auth_token');
+        }
+
+        function setAuthToken(token) {
+            localStorage.setItem('auth_token', token);
+        }
+
+        function clearAuthToken() {
+            localStorage.removeItem('auth_token');
+        }
+
+        function getUserEmail() {
+            return localStorage.getItem('user_email');
+        }
+
+        function setUserEmail(email) {
+            localStorage.setItem('user_email', email);
+        }
+
+        // Update header based on login status
+        function updateHeaderAuthStatus() {
+            const navRight = document.querySelector('.nav-right');
+            if (!navRight) return;
+
+            const isLoggedIn = checkLogin();
+            const userEmail = getUserEmail();
+
+            navRight.innerHTML = isLoggedIn
+                ? `
+                    <div class="user-info">
+                        <span class="user-email">${userEmail}</span>
+                    </div>
+                    <a href="/dashboard" class="btn btn-ghost">Личный кабинет</a>
+                    <button onclick="logout()" class="btn btn-ghost">Выход</button>
+                `
+                : `
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                `;
+        }
+
+        function logout() {
+            clearAuthToken();
+            setUserEmail('');
+            showToast('Вы вышли из аккаунта', 'info');
+            setTimeout(() => window.location.href = '/', 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', updateHeaderAuthStatus);
+        </script>
+        
+
+    <script>
+    let currentStep = 1;
+    let selectedPlan = 'free';
+    let selectedPrice = 0;
+    let paymentMethod = 'card';
+
+    function selectPlan(element, plan, price) {
+        document.querySelectorAll('.plan-option').forEach(e => e.classList.remove('selected'));
+        element.classList.add('selected');
+        selectedPlan = plan;
+        selectedPrice = price;
+        updateSummary();
+    }
+
+    function selectPaymentMethod(element, method) {
+        document.querySelectorAll('.payment-tab').forEach(e => e.classList.remove('active'));
+        element.classList.add('active');
+        paymentMethod = method;
+
+        document.getElementById('payment-card').style.display = method === 'card' ? 'block' : 'none';
+        document.getElementById('payment-crypto').style.display = method === 'crypto' ? 'block' : 'none';
+    }
+
+    function updateSummary() {
+        document.getElementById('summary-plan').textContent = selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1);
+        document.getElementById('summary-price').textContent = selectedPrice.toLocaleString('ru') + '₽';
+        document.getElementById('summary-total').textContent = selectedPrice.toLocaleString('ru') + '₽';
+    }
+
+    function nextStep() {
+        if (currentStep === 1) {
+            goToStep(2);
+        } else if (currentStep === 2) {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            if (!name || !email) {
+                showToast('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            goToStep(3);
+        } else if (currentStep === 3) {
+            completePayment();
+        }
+    }
+
+    function previousStep() {
+        if (currentStep > 1) {
+            goToStep(currentStep - 1);
+        }
+    }
+
+    function goToStep(step) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.step-indicator').forEach(i => i.classList.remove('active'));
+
+        document.getElementById('step-' + step).classList.add('active');
+        document.getElementById('indicator-' + step).classList.add('active');
+
+        document.getElementById('prev-btn').disabled = step === 1;
+
+        if (step === 3) {
+            document.getElementById('next-btn').textContent = 'Оплатить';
+            startTimer();
+        } else {
+            document.getElementById('next-btn').textContent = 'Далее →';
+        }
+
+        currentStep = step;
+    }
+
+    function copyCrypto(elementId) {
+        const text = document.getElementById(elementId).textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Скопировано в буфер обмена', 'success');
+        });
+    }
+
+    function startTimer() {
+        let seconds = 900;
+        setInterval(() => {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('timer').textContent = `⏱️ Предложение действительно ${mins}:${secs.toString().padStart(2, '0')}`;
+            seconds--;
+        }, 1000);
+    }
+
+    async function completePayment() {
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+
+        try {
+            const response = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    plan: selectedPlan,
+                    price: selectedPrice,
+                    name: name,
+                    email: email,
+                    method: paymentMethod
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('Спасибо за оплату! Проверьте email', 'success');
+                setTimeout(() => window.location.href = '/dashboard', 2000);
+            } else {
+                showToast(data.error || 'Ошибка платежа', 'error');
+            }
+        } catch (error) {
+            showToast('Ошибка обработки платежа', 'error');
+        }
+    }
+
+    // Get plan from URL params
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get('plan');
+    if (planParam === 'pro') {
+        const proCard = document.querySelectorAll('.plan-option')[1];
+        selectPlan(proCard, 'pro', 9990);
+    }
+    </script>
+</body>
+</html>
+        

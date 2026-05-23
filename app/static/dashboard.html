@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд - MCP Market Russia</title>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --surface: #111827;
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --accent-gold: #f59e0b;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 26, 0.8);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .logo-badge {
+            font-size: 0.65rem;
+            background: var(--accent-gold);
+            color: #000;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .nav-center a {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-center a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border-subtle);
+            padding: 3rem 2rem 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Sections */
+        section {
+            padding: 3rem 0;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-center {
+                flex: auto;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: center;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            section {
+                padding: 2rem 0;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+        
+
+        main {
+            min-height: calc(100vh - 200px);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+        }
+
+        .stat-card-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .stat-card-change {
+            font-size: 0.9rem;
+            color: var(--success);
+            margin-top: 0.5rem;
+        }
+
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 8px;
+        }
+
+        .completeness-row {
+            margin-bottom: 1.5rem;
+        }
+
+        .completeness-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+            }
+        }
+    
+        @keyframes slideOut {
+        to {
+        transform: translateX(400px);
+        opacity: 0;
+        }
+        }
+    </style>
+</head>
+<body>
+<script>
+// Polyfill 2026-04-18: first auth script has SyntaxError, kills its globals.
+window.getAuthToken=window.getAuthToken||function(){try{return localStorage.getItem("auth_token")||"";}catch(e){return "";}};
+window.checkLogin=window.checkLogin||function(){return !!(window.getAuthToken&&window.getAuthToken());};
+window.getUserEmail=window.getUserEmail||function(){try{return localStorage.getItem("user_email")||"";}catch(e){return "";}};
+window.setAuthToken=window.setAuthToken||function(t){try{localStorage.setItem("auth_token",t);}catch(e){}};
+window.setUserEmail=window.setUserEmail||function(e){try{localStorage.setItem("user_email",e);}catch(err){}};
+window.clearAuthToken=window.clearAuthToken||function(){try{localStorage.removeItem("auth_token");}catch(e){}};
+window.updateHeaderAuthStatus=window.updateHeaderAuthStatus||function(){};
+window.logout=window.logout||function(){try{localStorage.removeItem("auth_token");}catch(e){}window.location.href="/login";};
+</script>
+
+    
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    MCP Market
+                    <span class="logo-badge">Russia</span>
+                </div>
+                <nav class="nav-center">
+                    <a href="/">Главная</a>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/api-docs" target="_blank">Документация</a>
+                    <a href="/dashboard">Дашборд</a>
+                </nav>
+                <div class="nav-right">
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                </div>
+            </div>
+        </header>
+        
+
+    <main class="container" style="padding-top: 2rem;">
+        <section>
+            <h1 style="margin-bottom: 2rem;">Дашборд</h1>
+
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-card-label">Компании</div>
+                    <div class="stat-card-value" id="stat-companies">--</div>
+                    <div class="stat-card-change" id="change-companies"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Проекты</div>
+                    <div class="stat-card-value" id="stat-projects">--</div>
+                    <div class="stat-card-change" id="change-projects"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Инструменты</div>
+                    <div class="stat-card-value" id="stat-tools">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Категории</div>
+                    <div class="stat-card-value" id="stat-categories">--</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="chart-container">
+                <h3 class="chart-title">Полнота данных</h3>
+                <div id="completeness-container" class="loading">Загрузка...</div>
+            </div>
+        </section>
+
+        <section>
+            <div class="chart-container">
+                <h3 class="chart-title">Запросы по времени</h3>
+                <div id="requests-chart" style="height: 200px; background: rgba(255,255,255,0.02); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <span class="loading" style="padding: 0;">График загружается...</span>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="chart-container">
+                <h3 class="chart-title">Топ регионы</h3>
+                <div class="table-container">
+                    <table id="regions-table">
+                        <thead>
+                            <tr>
+                                <th>Регион</th>
+                                <th>Компании</th>
+                                <th>Проекты</th>
+                                <th>Полнота</th>
+                            </tr>
+                        </thead>
+                        <tbody id="regions-tbody" class="loading">
+                            <tr><td colspan="4">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <section>
+            <div class="chart-container">
+                <h3 class="chart-title">География компаний по России</h3>
+                <p style="color:var(--text-secondary);margin:-12px 0 18px;font-size:13px">Размер круга пропорционален количеству компаний в регионе. Наведите курсор для деталей.</p>
+                <div id="russia-map-wrap" style="position:relative;background:var(--bg-secondary);border-radius:12px;padding:16px;overflow:hidden">
+                    <svg id="russia-map" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block">
+                        <defs>
+                            <radialGradient id="bubbleGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#ff7a3a" stop-opacity="0.9"/>
+                                <stop offset="100%" stop-color="#ff5722" stop-opacity="0.55"/>
+                            </radialGradient>
+                        </defs>
+                        <path id="russia-outline" d="M 51.5 320.0 L 86.0 310.0 L 86.0 270.0 L 97.5 270.0 L 109.0 180.0 L 155.0 200.0 L 212.5 190.0 L 298.8 170.0 L 339.0 160.0 L 385.0 140.0 L 471.2 110.0 L 557.5 80.0 L 672.5 130.0 L 730.0 150.0 L 845.0 170.0 L 902.5 190.0 L 948.5 220.0 L 931.2 270.0 L 873.8 320.0 L 816.2 370.0 L 758.0 410.0 L 741.5 420.0 L 701.2 440.0 L 678.2 420.0 L 661.0 400.0 L 615.0 370.0 L 546.2 370.0 L 488.5 360.0 L 442.5 370.0 L 385.5 370.0 L 356.2 360.0 L 270.0 350.0 L 241.2 370.0 L 212.5 420.0 L 195.2 440.0 L 183.8 450.0 L 155.0 440.0 L 143.5 420.0 L 132.2 410.0 L 126.2 370.0 L 109.0 350.0 L 86.0 330.0 L 51.5 320.0 Z" fill="#1b2340" stroke="#2d3e6b" stroke-width="1.5"/>
+                        <g id="russia-bubbles"></g>
+                        <g id="russia-labels"></g>
+                    </svg>
+                    <div id="map-tooltip" style="position:absolute;pointer-events:none;background:rgba(10,14,26,0.95);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;border:1px solid #2d3e6b;box-shadow:0 4px 12px rgba(0,0,0,0.4);opacity:0;transition:opacity .15s;white-space:nowrap;z-index:10"></div>
+                    <div id="map-legend" style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;color:var(--text-secondary);font-size:12px;justify-content:center">
+                        <span style="display:flex;align-items:center;gap:6px"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="url(#bubbleGrad)"/></svg>50+ компаний</span>
+                        <span style="display:flex;align-items:center;gap:6px"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="url(#bubbleGrad)"/></svg>100+ компаний</span>
+                        <span style="display:flex;align-items:center;gap:6px"><svg width="28" height="28"><circle cx="14" cy="14" r="12" fill="url(#bubbleGrad)"/></svg>200+ компаний</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section>
+            <div class="chart-container">
+                <h3 class="chart-title">История запросов API</h3>
+                <div class="table-container">
+                    <table id="requests-table">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Endpoint</th>
+                                <th>Статус</th>
+                                <th>Время ответа</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-tbody" class="loading">
+                            <tr><td colspan="4">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>Продукт</h4>
+                    <a href="/pricing">Тарифы</a>
+                    <a href="/dashboard">Дашборд</a>
+                    <a href="/demo">Живое демо</a></div>
+                <div class="footer-section">
+                    <h4>Разработчикам</h4>
+                    <a href="/api-docs">API документация</a>
+                    <a href="/mcp/">MCP endpoint</a>
+                    <a href="/login">Получить API-ключ</a>
+                    <a href="/sitemap.xml">Sitemap</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Ресурсы</h4>
+                    <a href="/api-docs#rest">REST API</a>
+                    <a href="/api-docs#mcp">MCP JSON-RPC</a>
+                    <a href="/demo">Примеры вызовов</a>
+                    <a href="/robots.txt">robots.txt</a>
+                        <a href="/legal/offer">Оферта</a>
+                        <a href="/legal/privacy">Конфиденциальность</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Контакты</h4>
+                    <a href="mailto:info@mcp-market.ru">info@mcp-market.ru</a>
+                    <a href="https://t.me/Devavatar" target="_blank" rel="noopener">Telegram</a>
+                    <a href="/demo">Живое демо</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 MCP Market Russia. API строительного рынка России.</span>
+            </div>
+        </div>
+    </footer>
+<script>
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+        // Check login status
+        function checkLogin() {
+            return !!localStorage.getItem('auth_token');
+        }
+
+        function getAuthToken() {
+            return localStorage.getItem('auth_token');
+        }
+
+        function setAuthToken(token) {
+            localStorage.setItem('auth_token', token);
+        }
+
+        function clearAuthToken() {
+            localStorage.removeItem('auth_token');
+        }
+
+        function getUserEmail() {
+            return localStorage.getItem('user_email');
+        }
+
+        function setUserEmail(email) {
+            localStorage.setItem('user_email', email);
+        }
+
+        // Update header based on login status
+        function updateHeaderAuthStatus() {
+            const navRight = document.querySelector('.nav-right');
+            if (!navRight) return;
+
+            const isLoggedIn = checkLogin();
+            const userEmail = getUserEmail();
+
+            navRight.innerHTML = isLoggedIn
+                ? `
+                    <div class="user-info">
+                        <span class="user-email">${userEmail}</span>
+                    </div>
+                    <a href="/dashboard" class="btn btn-ghost">Личный кабинет</a>
+                    <button onclick="logout()" class="btn btn-ghost">Выход</button>
+                `
+                : `
+                    <a href="/login" class="btn btn-ghost">Войти</a>
+                    <a href="/login" class="btn btn-primary">Начать бесплатно →</a>
+                `;
+        }
+
+        function logout() {
+            clearAuthToken();
+            setUserEmail('');
+            showToast('Вы вышли из аккаунта', 'info');
+            setTimeout(() => window.location.href = '/', 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', updateHeaderAuthStatus);
+        </script>
+        
+
+    <script>
+    async function loadDashboardData() {
+        const token = getAuthToken();
+
+        try {
+            // Load stats
+            const statsRes = await fetch('/api/dashboard/stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const stats = await statsRes.json();
+            document.getElementById('stat-companies').textContent = (stats.companies || 0).toLocaleString('ru');
+            document.getElementById('stat-projects').textContent = (stats.projects || 0).toLocaleString('ru');
+            document.getElementById('stat-tools').textContent = stats.tools || 21;
+            document.getElementById('stat-categories').textContent = stats.categories || 18;
+
+            // Load completeness
+            const complRes = await fetch('/api/dashboard/completeness', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const completeness = await complRes.json();
+            renderCompleteness(completeness);
+
+            // Load regions
+            const regionsRes = await fetch('/api/dashboard/regions', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const regions = await regionsRes.json();
+            renderRegions(regions);
+
+            // Load requests
+            const reqRes = await fetch('/api/dashboard/requests', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const requests = await reqRes.json();
+            renderRequests(requests);
+
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+            showToast('Ошибка загрузки данных', 'error');
+        }
+    }
+
+    function renderCompleteness(data) {
+        const container = document.getElementById('completeness-container');
+        container.innerHTML = '';
+
+        const fields = data.fields || [];
+        fields.forEach(field => {
+            const row = document.createElement('div');
+            row.className = 'completeness-row';
+            const percent = Math.round(field.percentage || 0);
+            row.innerHTML = `
+                <div class="completeness-label">
+                    <span>${field.name}</span>
+                    <span>${percent}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percent}%"></div>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    function renderRegions(regions) {
+        const tbody = document.getElementById('regions-tbody');
+        tbody.innerHTML = regions.map(region => `
+            <tr>
+                <td>${region.name}</td>
+                <td>${region.companies}</td>
+                <td>${region.projects}</td>
+                <td>${region.completeness}%</td>
+            </tr>
+        `).join('');
+    }
+
+    function renderRequests(requests) {
+        const tbody = document.getElementById('requests-tbody');
+        tbody.innerHTML = requests.slice(0, 10).map(req => `
+            <tr>
+                <td>${new Date(req.timestamp).toLocaleString('ru')}</td>
+                <td><code style="font-size: 0.85rem; color: var(--accent-gold);">${req.endpoint}</code></td>
+                <td><span style="color: ${req.status === 200 ? 'var(--success)' : 'var(--error)'};">${req.status}</span></td>
+                <td>${req.duration}ms</td>
+            </tr>
+        `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+
+<script>
+/* Russia map bubble renderer — injected for dashboard map (v1). */
+(function(){
+  // Region coord map: (lon, lat) in degrees; converted via projection function.
+  // Only keys normalized to canonical short forms.
+  var REGIONS = {
+    "краснодарский край":    {lon:38.98, lat:45.04},
+    "московская область":    {lon:37.62, lat:55.75},
+    "ленинградская область": {lon:30.31, lat:59.93},
+    "тюменская область":     {lon:65.53, lat:57.15},
+    "красноярский край":     {lon:92.87, lat:56.02},
+    "новосибирская область": {lon:82.92, lat:55.03},
+    "свердловская область":  {lon:60.61, lat:56.83},
+    "республика башкортостан": {lon:55.97, lat:54.73},
+    "республика татарстан":  {lon:49.12, lat:55.79},
+    "самарская область":     {lon:50.15, lat:53.20},
+    "воронежская область":   {lon:39.20, lat:51.67},
+    "челябинская область":   {lon:61.40, lat:55.16},
+    "ростовская область":    {lon:39.72, lat:47.22},
+    "пермский край":         {lon:56.25, lat:58.01},
+    "волгоградская область": {lon:44.52, lat:48.71},
+    "нижегородская область": {lon:43.95, lat:56.29},
+    "омская область":        {lon:73.37, lat:54.99},
+    "иркутская область":     {lon:104.28, lat:52.28}
+  };
+  // Projection: lon[20..180] -> x[40..960], lat[82..40] -> y[50..470]
+  function project(lon, lat){
+    var x = 40 + (lon - 20) * (960 - 40) / (180 - 20);
+    var y = 50 + (82 - lat) * (470 - 50) / (82 - 40);
+    return [x, y];
+  }
+  function bubbleR(count){ return Math.max(6, Math.sqrt(count) * 1.6); }
+
+  var svgNS = "http://www.w3.org/2000/svg";
+  function renderMap(data){
+    var g = document.getElementById("russia-bubbles");
+    var gl = document.getElementById("russia-labels");
+    if (!g || !gl) return;
+    g.innerHTML = ""; gl.innerHTML = "";
+    var tip = document.getElementById("map-tooltip");
+    var wrap = document.getElementById("russia-map-wrap");
+    var items = (data || []).slice().sort(function(a,b){return b.count - a.count;});
+    items.forEach(function(r){
+      var key = (r.name || "").toLowerCase().trim();
+      var c = REGIONS[key];
+      if (!c) return;
+      var p = project(c.lon, c.lat);
+      var circle = document.createElementNS(svgNS, "circle");
+      circle.setAttribute("cx", p[0]);
+      circle.setAttribute("cy", p[1]);
+      circle.setAttribute("r", bubbleR(r.count));
+      circle.setAttribute("fill", "url(#bubbleGrad)");
+      circle.setAttribute("stroke", "#ff7a3a");
+      circle.setAttribute("stroke-width", "1.2");
+      circle.setAttribute("style", "cursor:pointer;transition:transform .12s");
+      circle.addEventListener("mouseenter", function(ev){
+        tip.innerHTML = "<b>" + r.name + "</b><br>" + r.count + " компаний" +
+                        (r.avg_rating ? "<br>Рейтинг: " + r.avg_rating.toFixed(2) + " ★" : "");
+        tip.style.opacity = 1;
+        circle.setAttribute("stroke-width", "2.5");
+      });
+      circle.addEventListener("mousemove", function(ev){
+        var rect = wrap.getBoundingClientRect();
+        tip.style.left = (ev.clientX - rect.left + 14) + "px";
+        tip.style.top  = (ev.clientY - rect.top  + 14) + "px";
+      });
+      circle.addEventListener("mouseleave", function(){
+        tip.style.opacity = 0;
+        circle.setAttribute("stroke-width", "1.2");
+      });
+      g.appendChild(circle);
+
+      // Label for top-3 regions
+      if (items.indexOf(r) < 3) {
+        var text = document.createElementNS(svgNS, "text");
+        text.setAttribute("x", p[0]);
+        text.setAttribute("y", p[1] + bubbleR(r.count) + 12);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", "11");
+        text.setAttribute("fill", "#9ba3b8");
+        text.textContent = r.name.replace(/область|край|Республика /g,"").trim();
+        gl.appendChild(text);
+      }
+    });
+  }
+
+  async function loadMap(){
+    try {
+      var resp = await fetch("/api/dashboard/regions");
+      var data = await resp.json();
+      renderMap(data);
+    } catch(e) { console.error("Russia map load failed:", e); }
+  }
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    setTimeout(loadMap, 50);
+  } else {
+    document.addEventListener("DOMContentLoaded", loadMap);
+  }
+})();
+</script>
+</body>
+</html>
+        
