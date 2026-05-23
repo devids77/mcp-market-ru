@@ -24,6 +24,9 @@ services:
     build: .
     container_name: mcp-server
     env_file: .env
+    # TG_EXTRA_HOSTS_FIX: pin api.telegram.org to working CDN IP (RU CDN block workaround)
+    extra_hosts:
+      - "api.telegram.org:149.154.167.220"
     restart: always
     ports:
     - 0.0.0.0:8000:8000
