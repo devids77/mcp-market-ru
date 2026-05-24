@@ -1085,8 +1085,9 @@ async def send_telegram_notification(message: str):
                 "text": message,
                 "parse_mode": "HTML",
             })
-    except Exception:
-        pass  # don't break request_quote on TG errors
+    except Exception as _e:
+        import sys
+        print(f"[TG-FAIL] {type(_e).__name__}: {_e}",file=sys.stderr,flush=True)
 
 mcp_app = mcp.http_app(path="/")
 
