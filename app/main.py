@@ -2340,22 +2340,30 @@ async def stats():
 
 # ─── Dashboard API ──────────────────────────────────────────────────
 
+# DASHBOARD_THREADPOOL_FIX
 _DASHBOARD_OVERVIEW_CACHE = {"data": None, "ts": 0}
 _DASHBOARD_OVERVIEW_TTL = 30  # seconds
+import asyncio as _asyncio
+_DASHBOARD_LOCK = _asyncio.Lock()
 
 @app.get("/api/dashboard/overview")
 async def dashboard_overview():
-    """Full overview stats for dashboard (30s cache)."""
+    """Full overview stats for dashboard (30s cache + single-flight + threadpool)."""
     import time as _t
     now = _t.time()
-    if _DASHBOARD_OVERVIEW_CACHE["data"] is not None and now - _DASHBOARD_OVERVIEW_CACHE["ts"] < _DASHBOARD_OVERVIEW_TTL:
-        return _DASHBOARD_OVERVIEW_CACHE["data"]
-    _DASHBOARD_OVERVIEW_DATA = await _dashboard_overview_impl()
-    _DASHBOARD_OVERVIEW_CACHE["data"] = _DASHBOARD_OVERVIEW_DATA
-    _DASHBOARD_OVERVIEW_CACHE["ts"] = now
-    return _DASHBOARD_OVERVIEW_DATA
+    c = _DASHBOARD_OVERVIEW_CACHE
+    if c["data"] is not None and now - c["ts"] < _DASHBOARD_OVERVIEW_TTL:
+        return c["data"]
+    async with _DASHBOARD_LOCK:
+        now2 = _t.time()
+        if c["data"] is not None and now2 - c["ts"] < _DASHBOARD_OVERVIEW_TTL:
+            return c["data"]
+        data = await _asyncio.to_thread(_dashboard_overview_impl_sync)
+        c["data"] = data
+        c["ts"] = now2
+        return data
 
-async def _dashboard_overview_impl():
+def _dashboard_overview_impl_sync():
     """Full overview stats for dashboard."""
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
