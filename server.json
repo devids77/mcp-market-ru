@@ -1,17 +1,48 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.devids77/mcp-market-ru",
-  "description": "MCP server for the Russian construction and real-estate market. 3,395 contractors, 20,322 projects across 18 regions, 24 tools for search, analytics, price estimation, and lead generation.",
-  "repository": {
-    "url": "https://github.com/devids77/mcp-market-ru",
-    "source": "github"
-  },
+  "title": "MCP Market Russia",
+  "description": "Russian construction market: 3,395 contractors, 20,322 projects, 24 search/analytics tools.",
   "version": "3.2.0",
   "websiteUrl": "https://mcp-market.ru",
+  "repository": {
+    "url": "https://github.com/devids77/mcp-market-ru",
+    "source": "github",
+    "id": "1215565885"
+  },
+  "icons": [
+    {
+      "src": "https://mcp-market.ru/favicon.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "any"
+      ]
+    }
+  ],
   "remotes": [
     {
       "type": "streamable-http",
       "url": "https://mcp-market.ru/mcp/"
     }
-  ]
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "categories": [
+        "construction",
+        "real-estate",
+        "russia",
+        "b2b-data"
+      ],
+      "region": "RU",
+      "language": "ru",
+      "toolCount": 24,
+      "datasetSize": {
+        "companies": 3395,
+        "projects": 20322,
+        "regions": 18
+      },
+      "auth": "anonymous",
+      "pricing": "free-mcp"
+    }
+  }
 }
