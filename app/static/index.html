@@ -592,7 +592,7 @@
     <main class="container">
         <section class="hero">
             <h1>API данных строительного рынка России</h1>
-            <p class="subtitle">Подключитесь к базе 3 395 компаний, 13 436 проектов и 21 MCP-инструменту для полного анализа рынка</p>
+            <p class="subtitle">Подключитесь к базе 3 395 компаний, 20 322 проектов и 24 MCP-инструмента для полного анализа рынка</p>
             <div class="hero-buttons">
                 <a href="/login" class="btn btn-primary">Начать бесплатно</a>
                 <a href="/api-docs" target="_blank" class="btn btn-ghost">Документация</a>
@@ -601,19 +601,19 @@
 
         <section class="stats-row">
             <div class="stat">
-                <div class="stat-number">3 395</div>
+                <div class="stat-number" data-stat="companies">3 395</div>
                 <div class="stat-label">Компаний</div>
             </div>
             <div class="stat">
-                <div class="stat-number">13 436</div>
+                <div class="stat-number" data-stat="projects">20 322</div>
                 <div class="stat-label">Проектов</div>
             </div>
             <div class="stat">
-                <div class="stat-number">21</div>
+                <div class="stat-number" data-stat="tools">24</div>
                 <div class="stat-label">Инструментов</div>
             </div>
             <div class="stat">
-                <div class="stat-number">18</div>
+                <div class="stat-number" data-stat="regions">18</div>
                 <div class="stat-label">Регионов</div>
             </div>
         </section>
@@ -826,6 +826,7 @@
         document.addEventListener('DOMContentLoaded', updateHeaderAuthStatus);
         </script>
         
+<script src="/static/stats-injector.js" defer></script>
 </body>
 </html>
         

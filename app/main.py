@@ -4045,7 +4045,7 @@ async def dashboard_stats_alias():
     """Alias for dashboard stat cards. Reuses overview + adds tools=21."""
     data = await dashboard_overview()
     if isinstance(data, dict):
-        data.setdefault("tools", 21)
+        data.setdefault("tools", 24)
     return data
 
 
@@ -4119,6 +4119,10 @@ async def favicon_ico():
 @app.get("/favicon.svg", include_in_schema=False)
 async def favicon_svg():
     return FileResponse("app/static/favicon.svg", media_type="image/svg+xml")
+
+@app.get("/static/stats-injector.js", include_in_schema=False)
+async def stats_injector_js():
+    return FileResponse("app/static/stats-injector.js", media_type="application/javascript")
 
 # ============================================================
 # New MCP tools (added 2026-04-20): export_search_csv, smart_match, get_lead_status
