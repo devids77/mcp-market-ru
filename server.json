@@ -12,8 +12,8 @@
   },
   "icons": [
     {
-      "src": "https://mcp-market.ru/favicon.png",
-      "mimeType": "image/png",
+      "src": "https://mcp-market.ru/favicon.svg",
+      "mimeType": "image/svg+xml",
       "sizes": [
         "any"
       ]
