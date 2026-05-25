@@ -986,7 +986,33 @@ Version: 3.1.1 | 21 tools
 """
 
 
+# === Fake-lead detection (added 2026-05-25) ===
+import re as _re_istest
+_TEST_EMAIL_RE = _re_istest.compile(
+    r"@(example|test|invalid|localhost)\.(com|ru|org|net|io)$|"
+    r"(yagentinbox|mailinator|10minutemail|tempmail|guerrillamail|throwaway|fakeinbox|sharklasers|trashmail|getnada)",
+    _re_istest.IGNORECASE,
+)
+_TEST_PHONE_RE = _re_istest.compile(r"555-?[0-9]{2,}")
+_TEST_NAME_RE = _re_istest.compile(r"^(test|john\s+doe|jane\s+doe|ivan\s+petrov|john\s+smith)$", _re_istest.IGNORECASE)
+
+
+def looks_like_test(email, phone, name):
+    """Detect AI-agent placeholder identities. Returns (is_test, reason)."""
+    if email and _TEST_EMAIL_RE.search(email):
+        if "@example." in email.lower() or "@test." in email.lower():
+            return True, "example_domain"
+        return True, "disposable_email"
+    if phone and _TEST_PHONE_RE.search(phone):
+        return True, "placeholder_phone"
+    if not email and not phone:
+        return True, "empty_contact"
+    if name and _TEST_NAME_RE.match(name.strip()):
+        return True, "test_name"
+    return False, None
+
 @mcp.tool()
+
 async def request_quote(
     company_id: str,
     project_id: str = "",
@@ -1023,9 +1049,11 @@ async def request_quote(
     company_website = rows[0].get("website", "")
     
     project_clause = "%(project_id)s::uuid" if project_id else "NULL"
+    _is_test_flag, _test_reason = looks_like_test(email, phone, name)
+
     result = execute_db(
-        f"""INSERT INTO leads (company_id, project_id, name, phone, email, comment, source)
-           VALUES (%(company_id)s::uuid, {project_clause}, %(name)s, %(phone)s, %(email)s, %(comment)s, 'mcp')
+        f"""INSERT INTO leads (company_id, project_id, name, phone, email, comment, source, is_test, test_reason)
+           VALUES (%(company_id)s::uuid, {project_clause}, %(name)s, %(phone)s, %(email)s, %(comment)s, 'mcp', %(is_test)s, %(test_reason)s)
            RETURNING id""",
         {
             "company_id": company_id,
@@ -1034,6 +1062,8 @@ async def request_quote(
             "phone": phone,
             "email": email,
             "comment": comment,
+            "is_test": _is_test_flag,
+            "test_reason": _test_reason,
         },
     )
     
@@ -1050,20 +1080,22 @@ async def request_quote(
     response += "С вами свяжутся в ближайшее время."
     
 
-    # Telegram notification
-    try:
-        tg_msg = (
-            f"<b>New lead!</b>\n"
-            f"Company: {company_name}\n"
-            f"Lead ID: {lead_id}\n"
-            f"Name: {name or '-'}\n"
-            f"Phone: {phone or '-'}\n"
-            f"Email: {email or '-'}\n"
-            f"Comment: {comment or '-'}"
-        )
-        await send_telegram_notification(tg_msg)
-    except Exception:
-        pass
+    # Telegram notification (skip placeholder/test leads)
+    if not _is_test_flag:
+        # Telegram notification
+        try:
+            tg_msg = (
+                f"<b>New lead!</b>\n"
+                f"Company: {company_name}\n"
+                f"Lead ID: {lead_id}\n"
+                f"Name: {name or '-'}\n"
+                f"Phone: {phone or '-'}\n"
+                f"Email: {email or '-'}\n"
+                f"Comment: {comment or '-'}"
+            )
+            await send_telegram_notification(tg_msg)
+        except Exception:
+            pass
     return response
 
 
