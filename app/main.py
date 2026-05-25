@@ -2235,7 +2235,6 @@ async def api_get_company(company_id: str):
 @app.get("/")
 async def root():
     import os
-import html
     html_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
     if os.path.exists(html_path):
         with open(html_path, "r") as f:
