@@ -47,7 +47,7 @@ if __name__ == "__main__":
     if not api_key:
         print("ERROR: Z_AI_API_KEY not set"); sys.exit(1)
     print(f"Endpoint: {ENDPOINT}\nModel: {MODEL}\nKey: {api_key[:20]}...")
-    conn = psycopg2.connect(host="mcp-db", dbname="mcpmarket", user="mcpuser", password="McpMarket2026Secure")
+    conn = psycopg2.connect(host=os.environ.get("DB_HOST", "mcp-db"), dbname=os.environ.get("DB_NAME", "mcpmarket"), user=os.environ.get("DB_USER", "mcpuser"), password=os.environ["DB_PASSWORD"])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     sql = "SELECT id, name, description, website FROM companies WHERE tags IS NULL OR array_length(tags,1) IS NULL OR array_length(tags,1)=0"
     if args.limit:

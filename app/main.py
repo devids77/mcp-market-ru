@@ -2235,6 +2235,7 @@ async def api_get_company(company_id: str):
 @app.get("/")
 async def root():
     import os
+import html
     html_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
     if os.path.exists(html_path):
         with open(html_path, "r") as f:
@@ -2267,7 +2268,7 @@ def company_profile(company_id: str):
             return HTMLResponse("<h1>Company not found</h1>", status_code=404)
         row = dict(zip(cols, r))
     except Exception as e:
-        return HTMLResponse(f"<h1>Error</h1><p>{e}</p>", status_code=500)
+        return HTMLResponse(f"<h1>Error</h1><p>{html.escape(str(e))}</p>", status_code=500)
     if not row:
         return HTMLResponse("<h1>Company not found</h1>", status_code=404)
     n = row["name"] or ""
@@ -4372,7 +4373,7 @@ async def quickstart_page():
         with open("/app/app/static/quickstart.html", "r", encoding="utf-8") as f:
             return HTMLResponse(f.read())
     except Exception as e:
-        return HTMLResponse(f"<h1>quickstart error</h1><pre>{e}</pre>", status_code=500)
+        return HTMLResponse(f"<h1>quickstart error</h1><pre>{html.escape(str(e))}</pre>", status_code=500)
 
 @app.get("/docs", response_class=HTMLResponse)
 async def docs_redirect():
