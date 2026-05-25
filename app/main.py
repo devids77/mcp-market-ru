@@ -986,30 +986,7 @@ Version: 3.1.1 | 21 tools
 """
 
 
-# === Fake-lead detection (added 2026-05-25) ===
-import re as _re_istest
-_TEST_EMAIL_RE = _re_istest.compile(
-    r"@(example|test|invalid|localhost)\.(com|ru|org|net|io)$|"
-    r"(yagentinbox|mailinator|10minutemail|tempmail|guerrillamail|throwaway|fakeinbox|sharklasers|trashmail|getnada)",
-    _re_istest.IGNORECASE,
-)
-_TEST_PHONE_RE = _re_istest.compile(r"555-?[0-9]{2,}")
-_TEST_NAME_RE = _re_istest.compile(r"^(test|john\s+doe|jane\s+doe|ivan\s+petrov|john\s+smith)$", _re_istest.IGNORECASE)
-
-
-def looks_like_test(email, phone, name):
-    """Detect AI-agent placeholder identities. Returns (is_test, reason)."""
-    if email and _TEST_EMAIL_RE.search(email):
-        if "@example." in email.lower() or "@test." in email.lower():
-            return True, "example_domain"
-        return True, "disposable_email"
-    if phone and _TEST_PHONE_RE.search(phone):
-        return True, "placeholder_phone"
-    if not email and not phone:
-        return True, "empty_contact"
-    if name and _TEST_NAME_RE.match(name.strip()):
-        return True, "test_name"
-    return False, None
+from app.lead_detector import looks_like_test  # noqa: E402
 
 @mcp.tool()
 
