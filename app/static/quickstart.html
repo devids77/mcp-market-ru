@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quickstart — MCP Market Russia</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Connect Claude Desktop, Cursor, Cline, Continue, and any MCP-compatible agent to 3,395 Russian construction contractors and 20,322 projects in 30 seconds. No registration required.">
+<link rel="canonical" href="https://mcp-market.ru/quickstart">
+<style>
+:root{--bg:#0f1117;--card:#161a23;--fg:#e6e8ec;--muted:#8b91a2;--accent:#4a9eff;--code:#0a0c12;--border:#2a2f3d}
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,Inter,Segoe UI,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;margin:0}
+main{max-width:880px;margin:0 auto;padding:40px 24px}
+h1,h2,h3{line-height:1.2;letter-spacing:-.02em}
+h1{font-size:2.4rem;margin:0 0 8px}
+h2{font-size:1.6rem;margin:40px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}
+h3{font-size:1.15rem;color:var(--accent);margin:20px 0 8px}
+p{color:var(--fg)}
+.muted{color:var(--muted);font-size:.95rem}
+.badges{margin:12px 0 32px}
+.badges img{margin-right:6px;vertical-align:middle}
+pre{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-size:.9rem}
+code{background:var(--code);padding:2px 6px;border-radius:4px;font-family:ui-monospace,SF Mono,Menlo,Consolas,monospace;font-size:.9rem;color:#a5d4ff}
+pre code{background:transparent;padding:0;color:inherit}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-top:16px;border-bottom:1px solid var(--border)}
+.tab{padding:8px 14px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.95rem;border-bottom:2px solid transparent}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.pane{display:none;padding-top:16px}
+.pane.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0}
+.copy-btn{float:right;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.8rem}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+footer{border-top:1px solid var(--border);margin-top:60px;padding:24px;text-align:center;color:var(--muted);font-size:.9rem}
+.kbd{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:ui-monospace,Menlo,monospace;font-size:.85em}
+ul li{margin:6px 0}
+.alert{background:rgba(74,158,255,.08);border-left:3px solid var(--accent);padding:10px 14px;border-radius:4px;margin:16px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>MCP Market Russia — Quickstart</h1>
+<p class="muted">Connect an AI agent to <strong>3,395</strong> Russian construction contractors and <strong>20,322</strong> projects in under a minute. No account required for the basic catalog.</p>
+<div class="badges">
+<img src="https://img.shields.io/badge/companies-3395-green" alt="companies">
+<img src="https://img.shields.io/badge/projects-20322-green" alt="projects">
+<img src="https://img.shields.io/badge/MCP_tools-24-blue" alt="24 tools">
+<img src="https://img.shields.io/badge/license-MIT-blue" alt="license MIT">
+</div>
+
+<h2>1. Endpoint</h2>
+<div class="card">
+<p>Single streamable-HTTP endpoint:</p>
+<pre><code>https://mcp-market.ru/mcp/</code></pre>
+<p class="muted">No path tokens, no per-tenant URLs. Agents speak JSON-RPC 2.0 with the standard MCP protocol (revision 2024-11-05).</p>
+</div>
+
+<h2>2. Connect your client</h2>
+<div class="tabs" role="tablist">
+<button class="tab active" data-pane="claude">Claude Desktop</button>
+<button class="tab" data-pane="cursor">Cursor</button>
+<button class="tab" data-pane="cline">Cline / Continue</button>
+<button class="tab" data-pane="custom">Custom (curl)</button>
+</div>
+
+<div class="pane active" id="claude">
+<p>Edit your Claude Desktop config:</p>
+<ul>
+<li>macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+<li>Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+</ul>
+<pre><code>{
+  "mcpServers": {
+    "mcp-market": {
+      "url": "https://mcp-market.ru/mcp/"
+    }
+  }
+}</code></pre>
+<p class="muted">Restart Claude Desktop. Then ask: <em>"Find me 3 top-rated panel-house contractors in St. Petersburg."</em></p>
+</div>
+
+<div class="pane" id="cursor">
+<p>In Cursor settings, add an MCP server:</p>
+<pre><code>{
+  "mcpServers": {
+    "mcp-market": {
+      "url": "https://mcp-market.ru/mcp/"
+    }
+  }
+}</code></pre>
+<p class="muted">Cursor restarts the MCP daemon on save. Test with: <em>"Use mcp-market to compare three modular-home builders."</em></p>
+</div>
+
+<div class="pane" id="cline">
+<p>Cline and Continue both accept the same streamable-HTTP config:</p>
+<pre><code>{
+  "mcp-market": {
+    "transport": "streamable-http",
+    "url": "https://mcp-market.ru/mcp/"
+  }
+}</code></pre>
+</div>
+
+<div class="pane" id="custom">
+<p>Direct JSON-RPC via curl (handshake + first tool call):</p>
+<pre><code># 1. Initialize and capture session id
+SID=$(curl -sf -D - https://mcp-market.ru/mcp/ \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize",\
+       "params":{"protocolVersion":"2024-11-05","capabilities":{},\
+                 "clientInfo":{"name":"curl","version":"1"}}}' \
+  | grep -i mcp-session-id | awk '{print $2}' | tr -d '\r')
+
+# 2. List tools
+curl -sf https://mcp-market.ru/mcp/ \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'Content-Type: application/json' \
+  -H "mcp-session-id: $SID" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'</code></pre>
+</div>
+
+<h2>3. Try a real query</h2>
+<div class="card">
+<h3>Ask your agent</h3>
+<ul>
+<li><em>"Find the top-3 panel-house contractors in St. Petersburg with rating &gt; 4.5."</em></li>
+<li><em>"Compare prices for a 120 m² wooden-frame house in Krasnodar region."</em></li>
+<li><em>"Show me 5 ongoing projects in Moscow that match modern Scandinavian style."</em></li>
+<li><em>"Estimate the cost of a 200 m² brick cottage near Yekaterinburg."</em></li>
+<li><em>"Generate a market report for Ленинградская область for Q2."</em></li>
+</ul>
+</div>
+
+<h2>4. The 24 tools at a glance</h2>
+<div class="card">
+<h3>Free (no API key) — 11 tools</h3>
+<p><code>search_companies</code>, <code>search_projects</code>, <code>compare_companies</code>, <code>calculate_cost</code>, <code>get_company</code>, <code>get_project</code>, <code>get_categories</code>, <code>get_regions</code>, <code>get_stats</code>, <code>smart_match</code>, <code>request_quote</code>.</p>
+<h3>Pro (API key) — 13 more</h3>
+<p><code>market_analytics</code>, <code>find_best_companies</code>, <code>price_comparison</code>, <code>company_portfolio</code>, <code>market_report</code>, <code>review_analysis</code>, <code>contractor_recommendation</code>, <code>project_estimator</code>, <code>trend_analyzer</code>, <code>company_deep_profile</code>, <code>region_comparison</code>, <code>export_search_csv</code>, <code>get_lead_status</code>.</p>
+<p class="muted">See <a href="/pricing">/pricing</a> for tier details or hit <code>tools/list</code> for the live schema.</p>
+</div>
+
+<h2>5. FAQ</h2>
+<div class="card">
+<h3>Do I need an API key?</h3>
+<p>No, not for the 11 free tools. Anonymous agents are first-class citizens. Register at <a href="/pricing">/pricing</a> only if you want analytics, AI tools, or higher rate limits.</p>
+
+<h3>What is the rate limit?</h3>
+<p>Anonymous: ~120 requests/minute per IP (soft). Free key: 1,000/day. Pro: 50,000/day.</p>
+
+<h3>How fresh is the data?</h3>
+<p>3,395 companies and 20,322 projects aggregated from open public sources; 67% of companies have machine-classified category tags (Phase 3 classifier, April 2026).</p>
+
+<h3>Is the source open?</h3>
+<p>Yes — MIT licensed, code at <a href="https://github.com/devids77/mcp-market-ru">github.com/devids77/mcp-market-ru</a>. The server is also reachable as a remote MCP transport, so you do not need to self-host.</p>
+
+<h3>What about Russian queries?</h3>
+<p>Fully supported. The search layer uses a Russian suffix-strip stemmer and tag-priority OR clauses; queries like <em>каркасные дома в СПб</em> return correct hits.</p>
+</div>
+
+<h2>6. Where to go next</h2>
+<ul>
+<li><a href="/demo">Live demo</a> — try queries in a browser without registering.</li>
+<li><a href="/dashboard">Dashboard</a> — watch live request volume.</li>
+<li><a href="/pricing">Pricing</a> — free vs starter vs pro.</li>
+<li><a href="https://github.com/devids77/mcp-market-ru">GitHub</a> — source, issues, releases.</li>
+<li><a href="https://glama.ai/mcp/servers/devids77/mcp-market-ru">Glama listing</a> — third-party catalog.</li>
+</ul>
+
+<footer>
+MCP Market Russia v3.2 · MIT License ·
+<a href="/">Home</a> ·
+<a href="/quickstart">Quickstart</a> ·
+<a href="https://github.com/devids77/mcp-market-ru">GitHub</a>
+</footer>
+</main>
+<script>
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+  const id=b.dataset.pane;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id===id));
+}));
+</script>
+</body>
+</html>

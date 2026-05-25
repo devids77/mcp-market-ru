@@ -4360,7 +4360,8 @@ async def api_smart_match(brief: str, top_n: int = 3):
 @app.get("/quickstart", response_class=HTMLResponse)
 async def quickstart_page():
     try:
-        return HTMLResponse("""<!DOCTYPE html><html lang=ru><meta charset=utf-8><title>Quickstart - MCP Market</title><style>body{font-family:sans-serif;max-width:760px;margin:40px auto;padding:0 20px;line-height:1.6}pre{background:#f4f4f6;padding:12px;border-radius:6px}code{background:#f0f0f3;padding:1px 5px;border-radius:3px}a{color:#2076d2}.b{background:#f0f7ff;border-left:3px solid #2076d2;padding:10px 14px;margin:14px 0;border-radius:4px}</style><h1>Quickstart</h1><p>Подключи MCP-сервер к Claude Desktop / Cursor - <b>без регистрации</b>:</p><pre>{ "mcpServers": { "mcp-market": { "url": "https://mcp-market.ru/mcp" } } }</pre><p>REST API без ключа: <code>curl https://mcp-market.ru/api/v1/search/companies?q=каркас</code></p><div class=b>Ключ нужен только для Analytics (Starter) и AI Tools (Pro). Получить - <a href=/pricing>/pricing</a>.</div><p><a href=/demo>/demo</a> &middot; <a href=/dashboard>/dashboard</a> &middot; <a href=/pricing>/pricing</a> &middot; <a href=https://github.com/devids77/mcp-market-ru>GitHub</a></p>""")
+        with open("/app/app/static/quickstart.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(f.read())
     except Exception as e:
         return HTMLResponse(f"<h1>quickstart error</h1><pre>{e}</pre>", status_code=500)
 
