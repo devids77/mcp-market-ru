@@ -1,6 +1,6 @@
 fastapi
 uvicorn[standard]
-fastmcp>=3.0.0
+fastmcp>=3.3.1
 asyncpg
 psycopg2-binary
 sqlalchemy[asyncio]
