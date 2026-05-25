@@ -24,3 +24,8 @@ test_*.log
 .env
 __pycache__/
 *.pyc
+
+# Session logs and ad-hoc patches
+_*.txt
+_*.log
+_patch*.py
