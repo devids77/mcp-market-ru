@@ -4,7 +4,7 @@ fastmcp>=3.0.0
 asyncpg
 psycopg2-binary
 sqlalchemy[asyncio]
-pydantic>=2.11.7
+pydantic>=2.13.4
 pydantic-settings
 httpx
 python-dotenv
