@@ -9,7 +9,7 @@ import psycopg2
 import psycopg2.extras
 import requests
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@127.0.0.1:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket"
 KEY = "30cec148-c9c8-4325-a82d-9d922a3b7b3e"
 
 

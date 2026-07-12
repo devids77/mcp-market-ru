@@ -1,6 +1,6 @@
 import json, uuid, psycopg2, psycopg2.extras
 
-DB = 'postgresql://mcpuser:McpMarket2026Secure@127.0.0.1:5432/mcpmarket'
+DB = 'postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket'
 conn = psycopg2.connect(DB)
 conn.autocommit = True
 cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)

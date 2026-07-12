@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket"
 
 def get_companies(region=None):
     conn = psycopg2.connect(DB)

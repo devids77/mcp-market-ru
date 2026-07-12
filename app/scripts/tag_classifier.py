@@ -55,7 +55,7 @@ if __name__ == "__main__":
     ap.add_argument("--dry", type=int, default=0, help="Print classification for N samples, don't write")
     ap.add_argument("--commit", action="store_true", help="Actually write tags[] column")
     args = ap.parse_args()
-    conn = psycopg2.connect(host="mcp-db", dbname="mcpmarket", user="mcpuser", password=os.environ.get("PG_PASSWORD", "McpMarket2026Secure"))
+    conn = psycopg2.connect(host="mcp-db", dbname="mcpmarket", user="mcpuser", password=os.environ["DB_PASSWORD"])
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("SELECT id, name, description FROM companies")
     rows = cur.fetchall()

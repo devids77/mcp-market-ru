@@ -11,7 +11,7 @@ import psycopg2
 import psycopg2.extras
 import requests
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@127.0.0.1:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket"
 SERPER_KEY = "ff7ba0cde3ccff4cc08ce0155b945043490f666b"
 
 # Domains to skip (not company websites)

@@ -1,6 +1,6 @@
 import json,time,uuid,re,psycopg2,psycopg2.extras,requests
 
-DB_URL="postgresql://mcpuser:McpMarket2026Secure@127.0.0.1:5432/mcpmarket"
+DB_URL="postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket"
 API_KEY="30cec148-c9c8-4325-a82d-9d922a3b7b3e"
 
 QUERIES=["строительство домов под ключ","каркасные дома","дома из бруса","строительство домов из газобетона","строительство коттеджей","модульные дома","агентство недвижимости"]

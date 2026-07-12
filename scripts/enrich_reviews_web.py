@@ -10,7 +10,7 @@ import psycopg2
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 log = logging.getLogger(__name__)
 
-DB_CONN = f"postgresql://{os.getenv('DB_USER','mcpuser')}:{os.getenv('DB_PASS','McpMarket2026Secure')}@{os.getenv('DB_HOST','localhost')}:{os.getenv('DB_PORT','5432')}/{os.getenv('DB_NAME','mcpmarket')}"
+DB_CONN = f"postgresql://{os.getenv('DB_USER','mcpuser')}:{os.getenv('DB_PASS','CHANGE_ME_DB_PASSWORD_FROM_ENV')}@{os.getenv('DB_HOST','localhost')}:{os.getenv('DB_PORT','5432')}/{os.getenv('DB_NAME','mcpmarket')}"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",

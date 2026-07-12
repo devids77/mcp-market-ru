@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 from urllib.parse import quote
 import psycopg2
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket"
 conn = psycopg2.connect(DB)
 cur = conn.cursor()
 cur.execute("""SELECT id, name, city FROM companies 

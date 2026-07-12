@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: mcpmarket
       POSTGRES_USER: mcpuser
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-McpMarket2026Secure}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
     volumes:
     - pgdata:/var/lib/postgresql/data
     - ./migrations:/docker-entrypoint-initdb.d
@@ -31,8 +31,8 @@ services:
     ports:
     - 0.0.0.0:8000:8000
     environment:
-      DATABASE_URL: postgresql+asyncpg://mcpuser:${DB_PASSWORD:-McpMarket2026Secure}@db:5432/mcpmarket
-      DATABASE_URL_SYNC: postgresql://mcpuser:${DB_PASSWORD:-McpMarket2026Secure}@db:5432/mcpmarket
+      DATABASE_URL: postgresql+asyncpg://mcpuser:${DB_PASSWORD:?DB_PASSWORD must be set in .env}@db:5432/mcpmarket
+      DATABASE_URL_SYNC: postgresql://mcpuser:${DB_PASSWORD:?DB_PASSWORD must be set in .env}@db:5432/mcpmarket
       SERVER_NAME: MCP Market Russia
       SERVER_URL: https://mcp-market.ru
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}

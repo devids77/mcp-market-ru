@@ -14,7 +14,7 @@ import ssl
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 log = logging.getLogger(__name__)
 
-DB_URL = 'postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket'
+DB_URL = 'postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket'
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False

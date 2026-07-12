@@ -8,7 +8,7 @@ import re
 import time
 import sys
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket"
 
 def get_db():
     return psycopg2.connect(DB)

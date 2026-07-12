@@ -13,7 +13,7 @@ from urllib.parse import quote_plus
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 log = logging.getLogger(__name__)
 
-DB = f"postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket"
+DB = f"postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket"
 
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 HEADERS = {'User-Agent': UA, 'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.5'}

@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 log = logging.getLogger(__name__)
 
-DB_URL = 'postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket'
+DB_URL = 'postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket'
 
 def extract_phone(text):
     """Extract phone number from text."""

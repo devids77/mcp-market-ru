@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
                     handlers=[logging.FileHandler('enrich_lenobl.log'), logging.StreamHandler()])
 log = logging.getLogger(__name__)
 
-DB = os.getenv('DATABASE_URL', 'postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket')
+DB = os.getenv('DATABASE_URL', 'postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket')
 
 def get_db():
     conn = psycopg2.connect(DB)

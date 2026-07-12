@@ -7,7 +7,7 @@ import urllib.request
 import ssl
 import time
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket"
 
 def extract_prices(html):
     """Extract price per sqm from HTML content."""

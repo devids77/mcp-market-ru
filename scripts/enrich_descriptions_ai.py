@@ -7,7 +7,7 @@ import urllib.request, urllib.error
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@localhost:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@localhost:5432/mcpmarket"
 ENDPOINT = "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions"
 MODEL = "glm-4.6"
 SYSTEM = ("Ты извлекаешь краткое описание российской строительной компании из HTML её сайта. "

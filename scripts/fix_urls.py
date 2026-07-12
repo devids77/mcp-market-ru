@@ -1,7 +1,7 @@
 import json, psycopg2, psycopg2.extras, requests
 from bs4 import BeautifulSoup
 
-DB = "postgresql://mcpuser:McpMarket2026Secure@127.0.0.1:5432/mcpmarket"
+DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket"
 
 # Parse real URLs from scandiecodom.ru catalog
 print("Fetching catalog from scandiecodom.ru...")

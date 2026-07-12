@@ -144,7 +144,6 @@ API_TOOL_ENDPOINTS = {
     "/api/v1/compare": "free",
     "/api/v1/docs": "free",
     "/api/v1/calculate": "free",
-    "/api/v1/quote": "free",
     "/api/v1/analytics/market": "starter",
     "/api/v1/analytics/best-companies": "starter",
     "/api/v1/analytics/price-comparison": "starter",
@@ -163,10 +162,12 @@ PLAN_HIERARCHY = {"free": 0, "anonymous": 0, "starter": 1, "pro": 2, "enterprise
 RATE_LIMITS = {
     "free": 100,
     "anonymous": 50,
-    "starter": 5000,
-    "pro": 25000,
-    "enterprise": 100000,
+    "starter": 1000,
+    "pro": 5000,
+    "enterprise": -1,
 }
+
+_ANON_USAGE = {}  # (day, ip) -> count; in-memory ok: workers=1
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -187,6 +188,17 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 required_plan = "free"
             if required_plan == "free":
                 # Allow anonymous access to free endpoints with lower rate limit
+                ip = request.headers.get("x-real-ip") or (request.client.host if request.client else "?")
+                day = _time.strftime("%Y-%m-%d")
+                if len(_ANON_USAGE) > 20000:
+                    _ANON_USAGE.clear()
+                used = _ANON_USAGE.get((day, ip), 0) + 1
+                if used > RATE_LIMITS.get("anonymous", 50):
+                    return StarletteJSONResponse(
+                        status_code=429,
+                        content={"error": "Anonymous daily limit reached (50 req/day)",
+                                 "hint": "Free API key: https://mcp-market.ru/quickstart"})
+                _ANON_USAGE[(day, ip)] = used
                 request.state.plan = "anonymous"
                 request.state.api_key = None
                 return await call_next(request)
@@ -1028,6 +1040,18 @@ async def request_quote(
     
     project_clause = "%(project_id)s::uuid" if project_id else "NULL"
     _is_test_flag, _test_reason = looks_like_test(email, phone, name)
+
+    # Anti-spam (M2): max 3 leads/day per contact, 300/day total
+    if email or phone:
+        _dup = query_db(
+            "SELECT COUNT(*) AS c FROM leads WHERE created_at::date = CURRENT_DATE AND (email = %(email)s OR phone = %(phone)s)",
+            {"email": email or None, "phone": phone or None}, 1)
+        if _dup and _dup[0]["c"] >= 3:
+            return "Заявка от этого контакта уже зарегистрирована сегодня — компания свяжется с вами."
+    _day_total = query_db(
+        "SELECT COUNT(*) AS c FROM leads WHERE created_at::date = CURRENT_DATE", {}, 1)
+    if _day_total and _day_total[0]["c"] >= 300:
+        return "Дневной лимит заявок сервиса исчерпан — попробуйте завтра."
 
     result = execute_db(
         f"""INSERT INTO leads (company_id, project_id, name, phone, email, comment, source, is_test, test_reason)
@@ -2974,7 +2998,10 @@ async def register_api_key(request: Request):
 
 @app.post("/api/leads/create")
 async def create_lead(request: Request):
-    """Create a lead (paid feature)"""
+    """Create a lead (requires API key)"""
+    key_info = await validate_api_key(request)
+    if key_info is None or (isinstance(key_info, dict) and "error" in key_info):
+        return JSONResponse({"error": "API key required", "hint": "Pass X-API-Key header. Free key: https://mcp-market.ru/quickstart"}, status_code=401)
     try:
         data = await request.json()
         
@@ -3984,7 +4011,7 @@ async def confirm_payment(payment_id: str, request: Request):
         
         # Create API key for the user
         plan = payment["plan"]
-        limits = {"starter": 5000, "pro": 50000, "enterprise": -1}
+        limits = {"starter": 1000, "pro": 5000, "enterprise": -1}
         req_limit = limits.get(plan, 5000)
         
         raw_key = secrets.token_hex(16)

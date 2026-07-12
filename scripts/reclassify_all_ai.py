@@ -7,7 +7,7 @@ import os, sys, json, time, ssl, argparse, urllib.request, urllib.error
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-DB="postgresql://mcpuser:McpMarket2026Secure@127.0.0.1:5432/mcpmarket"
+DB="postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket"
 KEY=os.environ.get('Z_AI_API_KEY','').strip()
 URL="https://open.bigmodel.cn/api/coding/paas/v4/chat/completions"
 MODEL="glm-4.6"
