@@ -30,15 +30,10 @@ if [ "$LOCAL" = "$REMOTE" ]; then
   exit 0
 fi
 
-if [ -z "${GH_TOKEN:-}" ]; then
-  AHEAD=$(git rev-list --count origin/master..HEAD 2>/dev/null || echo ?)
-  echo "$LOG_TAG GH_TOKEN missing; master is $AHEAD ahead of origin/master, skipping push"
-  exit 0
-fi
-
-# Push using PAT via URL — does NOT persist credentials on disk
-PUSH_URL="https://x-access-token:${GH_TOKEN}@github.com/devids77/mcp-market-ru.git"
+# Push over SSH (deploy key /root/.ssh/id_ed25519_gh)
+PUSH_URL="git@github.com:devids77/mcp-market-ru.git"
 if git push "$PUSH_URL" master 2>&1; then
+  git push "$PUSH_URL" master:main 2>&1 || echo "$LOG_TAG main sync failed"
   echo "$LOG_TAG pushed master to origin"
 else
   echo "$LOG_TAG push failed"
