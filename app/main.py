@@ -5,6 +5,7 @@ Version: 3.1.1
 """
 import json
 import time
+import html
 from typing import Optional
 from contextlib import asynccontextmanager
 
@@ -2270,21 +2271,21 @@ def company_profile(company_id: str):
         return HTMLResponse(f"<h1>Error</h1><p>{html.escape(str(e))}</p>", status_code=500)
     if not row:
         return HTMLResponse("<h1>Company not found</h1>", status_code=404)
-    n = row["name"] or ""
-    city = row.get("city","") or ""
-    cat = row.get("category","") or ""
-    desc = (row.get("description","") or "")[:500]
+    n = html.escape(row["name"] or "")
+    city = html.escape(row.get("city","") or "")
+    cat = html.escape(row.get("category","") or "")
+    desc = html.escape((row.get("description","") or "")[:500])
     rating = row.get("rating","") or ""
-    phone = row.get("phone","") or ""
-    web = row.get("website","") or ""
+    phone = html.escape(row.get("phone","") or "")
+    web = html.escape(row.get("website","") or "")
     rc = row.get("reviews_count",0) or 0
-    html = f"""<!DOCTYPE html>
+    page_html = f"""<!DOCTYPE html>
 <html lang="ru"><head>
 <meta charset="utf-8">
 <title>{n} — MCP Market Russia</title>
 <meta name="description" content="{n}, {cat}, {city}. {desc[:160]}">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="canonical" href="https://mcp-market.ru/company/{company_id}">
+<link rel="canonical" href="https://mcp-market.ru/company/{html.escape(company_id)}">
 <style>body{{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;color:#333}}
 h1{{color:#1a56db}}a{{color:#1a56db}}.meta{{color:#666;margin:4px 0}}.desc{{margin:16px 0;line-height:1.6}}
 .badge{{background:#e8f0fe;color:#1a56db;padding:4px 12px;border-radius:12px;font-size:14px;display:inline-block;margin:2px}}
@@ -2301,7 +2302,7 @@ footer{{margin-top:40px;padding-top:20px;border-top:1px solid #eee;color:#999;fo
 <p style="margin-top:20px"><a href="https://mcp-market.ru/mcp/">Connect via MCP protocol</a> to get full data on {n}.</p>
 <footer>&copy; 2026 MCP Market Russia &mdash; mcp-market.ru</footer>
 </body></html>"""
-    return HTMLResponse(content=html)
+    return HTMLResponse(content=page_html)
 
 @app.get("/health")
 async def health():
@@ -3125,10 +3126,10 @@ async def get_pricing():
     """Return pricing tiers"""
     return JSONResponse({
         "plans": {
-            "free": {"name": "Free", "price": 0, "requests_per_day": 100, "tools": 21},
-            "starter": {"name": "Starter", "price": 2990, "requests_per_day": 1000, "tools": 21},
-            "pro": {"name": "Pro", "price": 7990, "requests_per_day": 5000, "tools": 21},
-            "enterprise": {"name": "Enterprise", "price": 24990, "requests_per_day": -1, "tools": 21}
+            "free": {"name": "Free", "price": 0, "requests_per_day": 100, "tools": 13},
+            "starter": {"name": "Starter", "price": 2990, "requests_per_day": 1000, "tools": 18},
+            "pro": {"name": "Pro", "price": 7990, "requests_per_day": 5000, "tools": 24},
+            "enterprise": {"name": "Enterprise", "price": 24990, "requests_per_day": -1, "tools": 24}
         },
         "company_plans": {
             "basic": {"name": "Basic", "price": 0, "leads_per_month": 0},
@@ -4123,6 +4124,10 @@ async def favicon_svg():
 @app.get("/static/stats-injector.js", include_in_schema=False)
 async def stats_injector_js():
     return FileResponse("app/static/stats-injector.js", media_type="application/javascript")
+
+@app.get("/.well-known/security.txt", include_in_schema=False)
+async def security_txt():
+    return FileResponse("app/static/security.txt", media_type="text/plain")
 
 # ============================================================
 # New MCP tools (added 2026-04-20): export_search_csv, smart_match, get_lead_status

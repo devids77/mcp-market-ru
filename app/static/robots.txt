@@ -2,7 +2,8 @@ User-agent: *
 Allow: /
 Allow: /mcp/
 Allow: /company/
-Allow: /pricing.html
+Allow: /pricing
+Allow: /quickstart
 Allow: /demo
 Allow: /dashboard
 Allow: /about

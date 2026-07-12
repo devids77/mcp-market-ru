@@ -31,3 +31,9 @@ _*.log
 _patch*.py
 .venv/
 data/
+
+# credential material / backups / generated — never commit
+nginx/.htpasswd*
+app/static/*backup*.html
+app/static/sitemap.xml
+*.bak-*

@@ -1,0 +1,4 @@
+Contact: mailto:scandiecodom@gmail.com
+Expires: 2027-07-12T00:00:00.000Z
+Preferred-Languages: ru, en
+Canonical: https://mcp-market.ru/.well-known/security.txt
