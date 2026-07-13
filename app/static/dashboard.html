@@ -757,6 +757,7 @@ window.logout=window.logout||function(){try{localStorage.removeItem("auth_token"
             });
             const requests = await reqRes.json();
             renderRequests(requests);
+            renderRequestsChart(requests);
 
         } catch (error) {
             console.error('Error loading dashboard:', error);
@@ -796,6 +797,33 @@ window.logout=window.logout||function(){try{localStorage.removeItem("auth_token"
                 <td>${region.completeness}%</td>
             </tr>
         `).join('');
+    }
+
+    function renderRequestsChart(requests) {
+        const el = document.getElementById('requests-chart');
+        if (!el) return;
+        const byDay = {};
+        (requests || []).forEach(function(r){
+            var d = (r.timestamp || '').slice(0, 10);
+            if (d) byDay[d] = (byDay[d] || 0) + 1;
+        });
+        const days = Object.keys(byDay).sort();
+        if (!days.length) { el.innerHTML = '<span class="loading" style="padding:0;">Пока нет запросов</span>'; return; }
+        const max = Math.max.apply(null, days.map(function(d){ return byDay[d]; }));
+        const W = 800, H = 200, pad = 28, bw = (W - pad * 2) / days.length;
+        let bars = '';
+        days.forEach(function(d, i){
+            var c = byDay[d];
+            var bh = max ? (H - pad * 2) * c / max : 0;
+            var x = pad + i * bw + bw * 0.15, w = bw * 0.7, y = H - pad - bh;
+            var label = d.slice(8, 10) + '.' + d.slice(5, 7);
+            bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="4" fill="url(#reqGrad)"/>';
+            bars += '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" font-size="13" fill="#ffb060">' + c + '</text>';
+            bars += '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (H - pad + 16) + '" text-anchor="middle" font-size="11" fill="#8a93a6">' + label + '</text>';
+        });
+        el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">' +
+            '<defs><linearGradient id="reqGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff9a3a"/><stop offset="100%" stop-color="#ff5722" stop-opacity="0.6"/></linearGradient></defs>' +
+            '<line x1="' + pad + '" y1="' + (H - pad) + '" x2="' + (W - pad) + '" y2="' + (H - pad) + '" stroke="#2d3e6b" stroke-width="1"/>' + bars + '</svg>';
     }
 
     function renderRequests(requests) {
