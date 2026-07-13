@@ -12,7 +12,7 @@ from urllib.parse import quote_plus, urljoin
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 log = logging.getLogger(__name__)
 
-DB_CONN = f"postgresql://{os.getenv('DB_USER','mcpuser')}:{os.getenv('DB_PASS','CHANGE_ME_DB_PASSWORD_FROM_ENV')}@{os.getenv('DB_HOST','localhost')}:{os.getenv('DB_PORT','5432')}/{os.getenv('DB_NAME','mcpmarket')}"
+DB_CONN = f"postgresql://{os.getenv('DB_USER','mcpuser')}:{os.environ['DB_PASSWORD']}@{os.getenv('DB_HOST','localhost')}:{os.getenv('DB_PORT','5432')}/{os.getenv('DB_NAME','mcpmarket')}"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
