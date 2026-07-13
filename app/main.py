@@ -995,7 +995,7 @@ def get_stats() -> str:
 - Agent queries today: **{stats['queries_today']}**
 - Leads generated: **{stats['leads_total']}**
 
-Version: 3.1.1 | 21 tools
+Version: 3.2.0 | 24 tools
 """
 
 
@@ -2280,6 +2280,11 @@ async def root():
 @app.get("/company/{company_id}")
 def company_profile(company_id: str):
     from fastapi.responses import HTMLResponse
+    import uuid as _uuid
+    try:
+        _uuid.UUID(str(company_id))
+    except (ValueError, AttributeError, TypeError):
+        return HTMLResponse("<h1>Company not found</h1>", status_code=404)
     try:
         conn = get_db()
         cur = conn.cursor()
@@ -2291,8 +2296,8 @@ def company_profile(company_id: str):
         if not r:
             return HTMLResponse("<h1>Company not found</h1>", status_code=404)
         row = dict(zip(cols, r))
-    except Exception as e:
-        return HTMLResponse(f"<h1>Error</h1><p>{html.escape(str(e))}</p>", status_code=500)
+    except Exception:
+        return HTMLResponse("<h1>Error</h1><p>Не удалось загрузить страницу компании.</p>", status_code=500)
     if not row:
         return HTMLResponse("<h1>Company not found</h1>", status_code=404)
     n = html.escape(row["name"] or "")
