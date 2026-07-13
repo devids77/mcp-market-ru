@@ -1,3 +1,4 @@
+import os
 """
 Enrich companies with website data from 2GIS profile API.
 Uses source_id to fetch individual company profiles.
@@ -10,7 +11,7 @@ import psycopg2.extras
 import requests
 
 DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket"
-KEY = "30cec148-c9c8-4325-a82d-9d922a3b7b3e"
+KEY = os.environ.get("DGIS_API_KEY", "")
 
 
 def get_db():

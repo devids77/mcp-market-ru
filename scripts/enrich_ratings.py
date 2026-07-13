@@ -14,7 +14,7 @@ import psycopg2
 from difflib import SequenceMatcher
 
 # Config
-SERPER_API_KEY = "ff7ba0cde3ccff4cc08ce0155b945043490f666b"
+SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
 SERPER_PLACES_URL = "https://google.serper.dev/places"
 
 DB_HOST = os.getenv("DB_HOST", "localhost")

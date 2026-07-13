@@ -1,3 +1,4 @@
+import os
 """
 Enrich companies with website data via Google Search (Serper.dev API).
 2500 free queries — prioritizes highest-rated companies first.
@@ -12,7 +13,7 @@ import psycopg2.extras
 import requests
 
 DB = "postgresql://mcpuser:CHANGE_ME_DB_PASSWORD_FROM_ENV@127.0.0.1:5432/mcpmarket"
-SERPER_KEY = "ff7ba0cde3ccff4cc08ce0155b945043490f666b"
+SERPER_KEY = os.environ.get("SERPER_API_KEY", "")
 
 # Domains to skip (not company websites)
 SKIP_DOMAINS = {
