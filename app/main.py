@@ -2488,10 +2488,24 @@ async def dashboard_categories():
 @app.get("/api/dashboard/regions")
 async def dashboard_regions():
     rows = query_db("""
-        SELECT region as name, COUNT(*) as count,
-               ROUND(AVG(rating)::numeric, 2) as avg_rating
-        FROM companies WHERE region IS NOT NULL
-        GROUP BY region ORDER BY count DESC
+        SELECT c.region as name, COUNT(*) as count, COUNT(*) as companies,
+               ROUND(AVG(c.rating)::numeric, 2) as avg_rating,
+               COALESCE(pj.projects, 0) as projects,
+               ROUND(AVG(
+                   ((CASE WHEN c.website IS NOT NULL AND c.website != '' THEN 1 ELSE 0 END)
+                  + (CASE WHEN c.phone IS NOT NULL AND c.phone != '' THEN 1 ELSE 0 END)
+                  + (CASE WHEN c.email IS NOT NULL AND c.email != '' THEN 1 ELSE 0 END)
+                  + (CASE WHEN c.description IS NOT NULL AND c.description != '' THEN 1 ELSE 0 END)) * 25.0
+               )::numeric, 0) as completeness
+        FROM companies c
+        LEFT JOIN (
+            SELECT co.region as region, COUNT(p.id) as projects
+            FROM projects p JOIN companies co ON p.company_id = co.id
+            WHERE co.region IS NOT NULL
+            GROUP BY co.region
+        ) pj ON pj.region = c.region
+        WHERE c.region IS NOT NULL
+        GROUP BY c.region, pj.projects ORDER BY count DESC
     """, limit=25)
     return [dict(r) for r in rows]
 
