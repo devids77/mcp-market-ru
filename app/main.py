@@ -294,7 +294,10 @@ mcp = FastMCP(
     "MCP Market Russia",
     version="3.2.0",
     instructions="""Russian construction companies and house projects catalog for AI agents.
-3,400+ verified companies across 20 cities. Real data from 2GIS and company websites.
+3,395 companies and 20,322 house projects across 18 regions. Data is scraped from 2GIS
+and company websites and is NOT independently verified — each company carries a `status`
+field ('verified' / 'claimed' / 'auto'); treat 'auto' as unvetted. Contact details are
+missing for many companies rather than guessed.
 
 Available tools:
 - search_companies — Find companies by category, region, budget. Returns website, phone, rating, reviews.
@@ -476,8 +479,8 @@ def search_projects(
         params["budget"] = budget_max
     
     if region:
-        conditions.append("(c.region ILIKE %(region)s OR c.city ILIKE %(region)s)")
-        params["region"] = f"%{region}%"
+        conditions.append("(c.region ~* %(region)s OR c.city ~* %(region)s)")
+        params["region"] = _region_pattern(region)
     
     if query:
         conditions.append(
@@ -563,6 +566,7 @@ def compare_companies(
     if len(ids) > 3:
         ids = ids[:3]
     
+    ids = [i for i in ids if _is_uuid(i)]
     placeholders = ", ".join([f"%(id{i})s::uuid" for i in range(len(ids))])
     params = {f"id{i}": uid for i, uid in enumerate(ids)}
     
@@ -585,7 +589,7 @@ def compare_companies(
                       MIN(price) as min_price, MAX(price) as max_price,
                       MIN(area) as min_area, MAX(area) as max_area,
                       array_agg(DISTINCT material) FILTER (WHERE material IS NOT NULL) as materials
-               FROM projects WHERE company_id = %(id)s::uuid""",
+               FROM projects WHERE company_id::text = %(id)s""",
             {"id": cid}, 1
         )
         project_stats[cid] = prows[0] if prows else {}
@@ -704,8 +708,8 @@ def calculate_cost(
         proj_params["mat"] = f"%{material}%"
     
     if region:
-        proj_conditions.append("(c.region ILIKE %(region)s OR c.city ILIKE %(region)s)")
-        proj_params["region"] = f"%{region}%"
+        proj_conditions.append("(c.region ~* %(region)s OR c.city ~* %(region)s)")
+        proj_params["region"] = _region_pattern(region)
     
     proj_where = " AND ".join(proj_conditions)
     
@@ -794,7 +798,7 @@ def get_company(company_id: str) -> str:
     start = time.time()
     
     rows = query_db(
-        "SELECT * FROM companies WHERE id = %(id)s::uuid",
+        "SELECT * FROM companies WHERE id::text = %(id)s OR slug = %(id)s",
         {"id": company_id}, 1
     )
     
@@ -841,7 +845,7 @@ def get_company(company_id: str) -> str:
     
     projects = query_db(
         """SELECT id, name, area, floors, bedrooms, material, price, price_description, dimensions
-           FROM projects WHERE company_id = %(id)s::uuid ORDER BY area ASC LIMIT 20""",
+           FROM projects WHERE company_id::text = %(id)s ORDER BY area ASC LIMIT 20""",
         {"id": company_id}, 20
     )
     
@@ -881,7 +885,7 @@ def get_project(project_id: str) -> str:
         """SELECT p.*, c.name as company_name, c.phone as company_phone, 
                   c.website as company_website, c.id as company_id
            FROM projects p JOIN companies c ON p.company_id = c.id 
-           WHERE p.id = %(id)s::uuid""",
+           WHERE p.id::text = %(id)s""",
         {"id": project_id}, 1
     )
     
@@ -1058,9 +1062,16 @@ async def request_quote(
     if not phone and not email and not name:
         return "Ошибка: укажите хотя бы имя, телефон или email для связи"
     
+    if not _is_uuid(company_id):
+        return "Ошибка: компания не найдена (company_id должен быть UUID из результатов поиска)"
+
     rows = query_db("SELECT name, phone, website FROM companies WHERE id = %(id)s::uuid", {"id": company_id}, 1)
     if not rows:
         return "Ошибка: компания не найдена"
+
+    # A bad project_id must not cost us the lead — drop the link, keep the lead.
+    if project_id and not _is_uuid(project_id):
+        project_id = ""
     
     company_name = rows[0]["name"]
     company_phone = rows[0].get("phone", "")
@@ -1075,7 +1086,8 @@ async def request_quote(
             "SELECT COUNT(*) AS c FROM leads WHERE created_at::date = CURRENT_DATE AND (email = %(email)s OR phone = %(phone)s)",
             {"email": email or None, "phone": phone or None}, 1)
         if _dup and _dup[0]["c"] >= 3:
-            return "Заявка от этого контакта уже зарегистрирована сегодня — компания свяжется с вами."
+            return ("Лимит 3 заявки в сутки на один контакт исчерпан — новая заявка "
+                    "не создана. Свяжитесь с компанией напрямую по контактам из её карточки.")
     _day_total = query_db(
         "SELECT COUNT(*) AS c FROM leads WHERE created_at::date = CURRENT_DATE", {}, 1)
     if _day_total and _day_total[0]["c"] >= 300:
@@ -1102,26 +1114,32 @@ async def request_quote(
     
     lead_id = result["id"] if result else "unknown"
     
-    response = f"Заявка отправлена компании «{company_name}».\nНомер заявки: {lead_id}\n"
-    if company_phone:
-        response += f"Телефон компании: {company_phone}\n"
-    if company_website:
-        response += f"Сайт компании: {company_website}\n"
-    response += "С вами свяжутся в ближайшее время."
+    response = (f"Заявка №{lead_id} по компании «{company_name}» зарегистрирована "
+                f"в MCP Market и передана оператору.\n")
+    if company_phone or company_website:
+        response += "Быстрее всего связаться с компанией напрямую:\n"
+        if company_phone:
+            response += f"Телефон: {company_phone}\n"
+        if company_website:
+            response += f"Сайт: {company_website}\n"
+    else:
+        response += ("Публичных контактов этой компании у нас нет — с вами свяжется "
+                     "оператор MCP Market.")
     
 
     # Telegram notification (skip placeholder/test leads)
     if not _is_test_flag:
         # Telegram notification
         try:
+            _esc = html.escape
             tg_msg = (
                 f"<b>New lead!</b>\n"
-                f"Company: {company_name}\n"
+                f"Company: {_esc(company_name or '-')}\n"
                 f"Lead ID: {lead_id}\n"
-                f"Name: {name or '-'}\n"
-                f"Phone: {phone or '-'}\n"
-                f"Email: {email or '-'}\n"
-                f"Comment: {comment or '-'}"
+                f"Name: {_esc(name or '-')}\n"
+                f"Phone: {_esc(phone or '-')}\n"
+                f"Email: {_esc(email or '-')}\n"
+                f"Comment: {_esc(comment or '-')}"
             )
             await send_telegram_notification(tg_msg)
         except Exception:
@@ -1227,8 +1245,8 @@ def market_analytics(region: str = "", category: str = "") -> str:
             where = []
             params = []
             if region:
-                where.append("region ILIKE %s")
-                params.append(f"%{region}%")
+                where.append("region ~* %s")
+                params.append(_region_pattern(region))
             if category:
                 where.append("(category ILIKE %s OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %s))")
                 params.extend([f"%{category}%", f"%{category}%"])
@@ -1326,8 +1344,8 @@ def find_best_companies(
             where = []
             params = []
             if region:
-                where.append("region ILIKE %s")
-                params.append(f"%{region}%")
+                where.append("region ~* %s")
+                params.append(_region_pattern(region))
             if category:
                 where.append("(category ILIKE %s OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %s))")
                 params.extend([f"%{category}%", f"%{category}%"])
@@ -1470,7 +1488,8 @@ def company_portfolio(company_slug: str) -> str:
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             # Get company details
-            cur.execute("SELECT * FROM companies WHERE slug = %s", (company_slug,))
+            cur.execute("SELECT * FROM companies WHERE slug = %s OR id::text = %s",
+                        (company_slug, company_slug))
             company = cur.fetchone()
             if not company:
                 return json.dumps({"error": f"Company '{company_slug}' not found"})
@@ -1556,8 +1575,8 @@ def market_report(region: str) -> str:
                     ROUND(AVG(rating)::numeric, 2) as avg_rating,
                     SUM(reviews_count) as total_reviews,
                     SUM(projects_count) as total_projects
-                FROM companies WHERE region ILIKE %s
-            """, (f"%{region}%",))
+                FROM companies WHERE region ~* %s
+            """, (_region_pattern(region),))
             overview = dict(cur.fetchone())
             
             # Price tiers
@@ -1573,9 +1592,9 @@ def market_report(region: str) -> str:
                     COUNT(*) as companies,
                     ROUND(AVG(rating)::numeric, 2) as avg_rating
                 FROM companies 
-                WHERE region ILIKE %s AND price_per_sqm_min IS NOT NULL
+                WHERE region ~* %s AND price_per_sqm_min IS NOT NULL
                 GROUP BY tier ORDER BY MIN(price_per_sqm_min)
-            """, (f"%{region}%",))
+            """, (_region_pattern(region),))
             price_tiers = [dict(r) for r in cur.fetchall()]
             
             # Top 5 by rating
@@ -1583,10 +1602,10 @@ def market_report(region: str) -> str:
                 SELECT slug, category, rating, reviews_count, 
                     price_per_sqm_min, price_per_sqm_max, phone, website
                 FROM companies 
-                WHERE region ILIKE %s AND rating IS NOT NULL
+                WHERE region ~* %s AND rating IS NOT NULL
                 ORDER BY rating DESC, reviews_count DESC
                 LIMIT 5
-            """, (f"%{region}%",))
+            """, (_region_pattern(region),))
             top_companies = [dict(r) for r in cur.fetchall()]
             
             # Top 5 most affordable with good rating
@@ -1594,10 +1613,10 @@ def market_report(region: str) -> str:
                 SELECT slug, category, rating, reviews_count, 
                     price_per_sqm_min, price_per_sqm_max, phone, website
                 FROM companies 
-                WHERE region ILIKE %s AND price_per_sqm_min IS NOT NULL AND rating >= 4.0
+                WHERE region ~* %s AND price_per_sqm_min IS NOT NULL AND rating >= 4.0
                 ORDER BY price_per_sqm_min ASC
                 LIMIT 5
-            """, (f"%{region}%",))
+            """, (_region_pattern(region),))
             best_deals = [dict(r) for r in cur.fetchall()]
             
             # Category breakdown
@@ -1605,9 +1624,9 @@ def market_report(region: str) -> str:
                 SELECT category, COUNT(*) as cnt,
                     ROUND(AVG(rating)::numeric, 2) as avg_rating,
                     ROUND(AVG(price_per_sqm_min)::numeric, 1) as avg_price
-                FROM companies WHERE region ILIKE %s
+                FROM companies WHERE region ~* %s
                 GROUP BY category ORDER BY cnt DESC
-            """, (f"%{region}%",))
+            """, (_region_pattern(region),))
             by_category = [dict(r) for r in cur.fetchall()]
             
             return json.dumps({
@@ -1627,7 +1646,7 @@ def market_report(region: str) -> str:
 
 @mcp.tool()
 def review_analysis(company_slug: str = "", region: str = "", category: str = "") -> str:
-    """Analyze company reviews - sentiment breakdown, common themes, strengths and weaknesses. Provide company_slug for specific company or region/category for market overview."""
+    """Reputation summary from the aggregate star rating and review count, benchmarked against the region average. Provide company_slug for one company, or region/category for a market overview. Review texts are not stored, so no per-review sentiment or themes are returned."""
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     try:
@@ -1636,28 +1655,28 @@ def review_analysis(company_slug: str = "", region: str = "", category: str = ""
                 SELECT c.name, c.slug, c.rating, c.reviews_count, c.region, c.category,
                        c.price_per_sqm_min, c.price_per_sqm_max,
                        (SELECT COUNT(*) FROM projects p WHERE p.company_id = c.id) as projects_count
-                FROM companies c WHERE c.slug = %s
-            """, (company_slug,))
+                FROM companies c WHERE c.slug = %s OR c.id::text = %s
+            """, (company_slug, company_slug))
             company = cur.fetchone()
             if not company:
                 return json.dumps({"error": "Company not found"}, ensure_ascii=False)
             
-            # Get rating distribution estimate based on rating
-            rating = float(company["rating"] or 0)
+            # We store only the aggregate star rating and the review count —
+            # never the individual reviews — so any per-review breakdown here
+            # would be invented. Report the two numbers we actually have.
+            _raw_rating = company["rating"]
+            rating = float(_raw_rating) if _raw_rating is not None else None
             reviews = int(company["reviews_count"] or 0)
-            
-            # Estimate sentiment
-            if rating >= 4.5:
-                sentiment = {"positive": round(reviews * 0.85), "neutral": round(reviews * 0.10), "negative": round(reviews * 0.05)}
+
+            if rating is None:
+                verdict = "Нет данных о репутации"
+            elif rating >= 4.5:
                 verdict = "Отличная репутация"
             elif rating >= 4.0:
-                sentiment = {"positive": round(reviews * 0.70), "neutral": round(reviews * 0.18), "negative": round(reviews * 0.12)}
                 verdict = "Хорошая репутация"
             elif rating >= 3.5:
-                sentiment = {"positive": round(reviews * 0.50), "neutral": round(reviews * 0.25), "negative": round(reviews * 0.25)}
                 verdict = "Средняя репутация"
             else:
-                sentiment = {"positive": round(reviews * 0.30), "neutral": round(reviews * 0.20), "negative": round(reviews * 0.50)}
                 verdict = "Низкая репутация"
             
             # Compare with region average
@@ -1671,14 +1690,17 @@ def review_analysis(company_slug: str = "", region: str = "", category: str = ""
                 "company": company["name"],
                 "rating": rating,
                 "total_reviews": reviews,
-                "sentiment": sentiment,
                 "verdict": verdict,
+                "basis": ("Оценка выведена только из агрегированного рейтинга и числа "
+                          "отзывов. Тексты отзывов не хранятся, разбивка по тональности "
+                          "и темам недоступна."),
                 "projects_count": company["projects_count"],
                 "region_comparison": {
                     "region": company["region"],
                     "avg_rating": round(float(region_avg["avg_rating"] or 0), 2),
                     "avg_reviews": round(float(region_avg["avg_reviews"] or 0), 0),
-                    "above_average": rating > float(region_avg["avg_rating"] or 0)
+                    "above_average": (rating > float(region_avg["avg_rating"] or 0)
+                                      if rating is not None else None)
                 }
             }
             return json.dumps(result, ensure_ascii=False, default=str)
@@ -1686,8 +1708,8 @@ def review_analysis(company_slug: str = "", region: str = "", category: str = ""
             where = []
             params = []
             if region:
-                where.append("region ILIKE %s")
-                params.append(f"%{region}%")
+                where.append("region ~* %s")
+                params.append(_region_pattern(region))
             if category:
                 where.append("category ILIKE %s")
                 params.append(f"%{category}%")
@@ -1740,8 +1762,8 @@ def contractor_recommendation(budget_min: float = 0, budget_max: float = 0, regi
         params = [min_rating]
         
         if region:
-            where.append("c.region ILIKE %s")
-            params.append(f"%{region}%")
+            where.append("c.region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             where.append("c.category ILIKE %s")
             params.append(f"%{category}%")
@@ -1815,8 +1837,8 @@ def project_estimator(area_sqm: float, region: str = "", category: str = "", qua
         where = ["price_per_sqm_min IS NOT NULL"]
         params = []
         if region:
-            where.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            where.append("region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             where.append("category ILIKE %s")
             params.append(f"%{category}%")
@@ -1899,8 +1921,8 @@ def trend_analyzer(region: str = "", category: str = "", period: str = "all") ->
         conditions = []
         params = []
         if region:
-            conditions.append("c.region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("c.region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("c.category ILIKE %s")
             params.append(f"%{category}%")
@@ -2013,7 +2035,8 @@ def company_deep_profile(slug: str) -> str:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        cur.execute("SELECT * FROM companies WHERE slug = %s", (slug,))
+        cur.execute("SELECT * FROM companies WHERE slug = %s OR id::text = %s",
+                    (slug, slug))
         company = cur.fetchone()
         
         if not company:
@@ -2121,7 +2144,7 @@ def region_comparison(regions: str, category: str = "") -> str:
         results = []
         for region_name in region_list:
             cat_filter = "AND category ILIKE %s" if category else ""
-            params = [f"%{region_name}%"]
+            params = [_region_pattern(region_name)]
             if category:
                 params.append(f"%{category}%")
             
@@ -2144,7 +2167,7 @@ def region_comparison(regions: str, category: str = "") -> str:
                     ROUND(MAX(price_per_sqm_max) FILTER (WHERE price_per_sqm_max IS NOT NULL)::numeric, 0) as max_price,
                     count(DISTINCT category) as categories_count
                 FROM companies
-                WHERE region ILIKE %s {cat_filter}
+                WHERE region ~* %s {cat_filter}
                 GROUP BY region
             """, params)
             
@@ -2154,7 +2177,7 @@ def region_comparison(regions: str, category: str = "") -> str:
                 cur.execute(f"""
                     SELECT category, count(*) as cnt 
                     FROM companies 
-                    WHERE region ILIKE %s {cat_filter}
+                    WHERE region ~* %s {cat_filter}
                     GROUP BY category ORDER BY cnt DESC LIMIT 5
                 """, params)
                 top_cats = cur.fetchall()
@@ -2257,7 +2280,7 @@ async def api_get_company(company_id: str):
     """Get full company details with projects for web frontend."""
     try:
         rows = query_db(
-            "SELECT * FROM companies WHERE id = %(id)s::uuid",
+            "SELECT * FROM companies WHERE id::text = %(id)s OR slug = %(id)s",
             {"id": company_id}, 1
         )
         if not rows:
@@ -2273,7 +2296,7 @@ async def api_get_company(company_id: str):
                 company[k] = str(v)
         
         projects = query_db(
-            "SELECT id, name, area, floors, bedrooms, material, price, price_description, dimensions FROM projects WHERE company_id = %(id)s::uuid ORDER BY area ASC LIMIT 20",
+            "SELECT id, name, area, floors, bedrooms, material, price, price_description, dimensions FROM projects WHERE company_id::text = %(id)s ORDER BY area ASC LIMIT 20",
             {"id": company_id}, 20
         )
         for p in projects:
@@ -2924,8 +2947,8 @@ async def api_top_companies(region: str = "", category: str = "", limit: int = 1
             where = []
             params = []
             if region:
-                where.append("region ILIKE %s")
-                params.append(f"%{region}%")
+                where.append("region ~* %s")
+                params.append(_region_pattern(region))
             if category:
                 where.append("category ILIKE %s")
                 params.append(f"%{category}%")
@@ -2954,8 +2977,8 @@ async def api_price_tiers(region: str = ""):
             where = "WHERE price_per_sqm_min IS NOT NULL"
             params = []
             if region:
-                where += " AND region ILIKE %s"
-                params.append(f"%{region}%")
+                where += " AND region ~* %s"
+                params.append(_region_pattern(region))
             
             cur.execute(f"""
                 SELECT 
@@ -3160,8 +3183,10 @@ async def get_leads(request: Request, status: str = "", limit: int = 50):
 
 
 @app.post("/api/keys/{key_id}/toggle")
-async def toggle_api_key(key_id: int):
-    """Toggle API key active status"""
+async def toggle_api_key(key_id: int, request: Request):
+    """Toggle API key active status (admin only)"""
+    if not _require_admin(request):
+        return JSONResponse({"error": "Admin authentication required"}, status_code=401)
     try:
         conn = get_db()
         cur = conn.cursor()
@@ -3336,8 +3361,8 @@ async def api_v1_search_companies(
                 conditions.append("(c.name ILIKE %s OR c.description ILIKE %s)")
                 params.extend([f"%{q}%", f"%{q}%"])
         if region:
-            conditions.append("c.region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("c.region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("c.category ILIKE %s")
             params.append(f"%{category}%")
@@ -3386,8 +3411,8 @@ async def api_v1_search_projects(
             conditions.append("(p.name ILIKE %s OR p.description ILIKE %s)")
             params.extend([f"%{q}%", f"%{q}%"])
         if region:
-            conditions.append("c.region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("c.region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("c.category ILIKE %s")
             params.append(f"%{category}%")
@@ -3498,8 +3523,8 @@ async def api_v1_market_analytics(region: str = "", category: str = ""):
         conditions = []
         params = []
         if region:
-            conditions.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("category ILIKE %s")
             params.append(f"%{category}%")
@@ -3553,8 +3578,8 @@ async def api_v1_best_companies(
         conditions = ["rating IS NOT NULL"]
         params = []
         if region:
-            conditions.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("category ILIKE %s")
             params.append(f"%{category}%")
@@ -3585,8 +3610,8 @@ async def api_v1_price_comparison(region: str = "", category: str = ""):
         conditions = ["price_per_sqm_min IS NOT NULL"]
         params = []
         if region:
-            conditions.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("category ILIKE %s")
             params.append(f"%{category}%")
@@ -3637,8 +3662,8 @@ async def api_analytics_report(request: Request, region: str = None, category: s
         where = []
         params = []
         if region:
-            where.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            where.append("region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             where.append("category ILIKE %s")
             params.append(f"%{category}%")
@@ -3790,8 +3815,8 @@ async def api_v1_ai_recommend(region: str = "", category: str = "строите�
         conditions = ["rating >= 4.0", "reviews_count >= 1"]
         params = []
         if region:
-            conditions.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("category ILIKE %s")
             params.append(f"%{category}%")
@@ -3830,8 +3855,8 @@ async def api_v1_ai_estimate(area: float = 100, category: str = "строите�
         conditions = ["price_per_sqm_min IS NOT NULL", "price_per_sqm_min > 0"]
         params = []
         if region:
-            conditions.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("region ~* %s")
+            params.append(_region_pattern(region))
         if category:
             conditions.append("category ILIKE %s")
             params.append(f"%{category}%")
@@ -3879,8 +3904,8 @@ async def api_v1_ai_trends(region: str = "", period: str = "month"):
         conditions = ["price_per_sqm_min IS NOT NULL"]
         params = []
         if region:
-            conditions.append("region ILIKE %s")
-            params.append(f"%{region}%")
+            conditions.append("region ~* %s")
+            params.append(_region_pattern(region))
         where = "WHERE " + " AND ".join(conditions)
         cur.execute(f"""
             SELECT region, category, COUNT(*) as companies,
@@ -3972,8 +3997,8 @@ async def api_v1_ai_region_compare(regions: str = ""):
                        AVG(price_per_sqm_min) as avg_price_min, AVG(price_per_sqm_max) as avg_price_max,
                        SUM(reviews_count) as total_reviews,
                        COUNT(CASE WHEN rating >= 4.5 THEN 1 END) as top_rated
-                FROM companies WHERE region ILIKE %s AND price_per_sqm_min IS NOT NULL
-            """, (f"%{reg}%",))
+                FROM companies WHERE region ~* %s AND price_per_sqm_min IS NOT NULL
+            """, (_region_pattern(reg),))
             stats = cur.fetchone()
             if stats and int(stats["companies"] or 0) > 0:
                 results.append({
@@ -4325,7 +4350,7 @@ def export_search_csv(
                 params["category"] = category
             if region:
                 conditions.append(f"({c_reg} ILIKE %(region)s OR {c_city} ILIKE %(region)s)")
-                params["region"] = f"%{region}%"
+                params["region"] = _region_pattern(region)
             if budget_max > 0:
                 if is_projects:
                     conditions.append("(p.price <= %(budget)s OR p.price IS NULL)")
@@ -4382,14 +4407,32 @@ _REGION_ALIASES = {
 }
 
 
+def _is_uuid(value) -> bool:
+    """True if `value` can be cast to uuid — agents pass slugs and prose here."""
+    import uuid as _uuid
+    try:
+        _uuid.UUID(str(value))
+        return True
+    except (ValueError, AttributeError, TypeError):
+        return False
+
+
 def _region_pattern(region: str) -> str:
     """POSIX-regex stem for `region ~*`, so a city query (Москва) still
-    matches the stored oblast (Московская область)."""
+    matches the stored oblast (Московская область).
+
+    A plain stem is not enough for the important cases: "москва" trimmed to
+    "москв" does not occur in "московская" — hence the curated alias table,
+    whose values are hand-written alternations and must stay unescaped.
+    Anything else is agent-supplied text and is escaped, or a stray "(" would
+    raise a regex error inside Postgres.
+    """
     import re as _re
     r = (region or "").strip().lower()
     if r in _REGION_ALIASES:
         return _REGION_ALIASES[r]
-    return _re.sub(r"[аяьеёи]$", "", r) or r
+    stem = _re.sub(r"[аяьеёи]$", "", r) or r
+    return _re.sub(r"([.^$*+?()\[\]{}|\])", r"\", stem)
 
 
 @mcp.tool()
