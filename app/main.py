@@ -308,6 +308,18 @@ Always include company website and phone in your response so the user can contac
 )
 
 
+_EN_SYNONYMS = {
+    "frame": "каркас", "timber": "брус", "beam": "брус", "brick": "кирпич",
+    "concrete": "газобетон", "aerated": "газобетон", "sip": "сип",
+    "house": "дом", "houses": "дом", "home": "дом", "cottage": "коттедж",
+    "construction": "строительство", "builder": "строительство",
+    "company": "компания", "bath": "баня", "sauna": "баня",
+    "roof": "кровля", "roofing": "кровля", "foundation": "фундамент",
+    "renovation": "ремонт", "repair": "ремонт", "design": "проект",
+    "modular": "модульный", "wooden": "дерево", "log": "бревно",
+}
+
+
 @mcp.tool()
 def search_companies(
     query: str = "",
@@ -332,12 +344,20 @@ def search_companies(
     conditions = ["1=1"]
     params = {}
     
+    rank_sql = ""
     if query:
-        conditions.append(
-            "to_tsvector('russian', COALESCE(name,'') || ' ' || COALESCE(description,'') || ' ' || COALESCE(city,'')) "
-            "@@ plainto_tsquery('russian', %(query)s)"
-        )
-        params["query"] = query
+        import re as _re
+        _q = query.lower()
+        for _en, _ru in _EN_SYNONYMS.items():
+            _q = _re.sub(r"\b" + _en + r"\b", _ru, _q)
+        _words = [w for w in _re.findall(r"[0-9a-zа-яё]+", _q, _re.IGNORECASE) if len(w) >= 3]
+        params["query"] = " or ".join(_words) if _words else query
+        _vec = ("to_tsvector('russian', COALESCE(name,'') || ' ' || COALESCE(description,'') "
+                "|| ' ' || COALESCE(city,'') || ' ' || COALESCE(category,'') "
+                "|| ' ' || COALESCE(array_to_string(subcategories,' '),'') "
+                "|| ' ' || COALESCE(array_to_string(tags,' '),''))")
+        conditions.append(_vec + " @@ websearch_to_tsquery('russian', %(query)s)")
+        rank_sql = "ts_rank(" + _vec + ", websearch_to_tsquery('russian', %(query)s)) DESC,"
     
     if category:
         conditions.append("(category = %(category)s OR %(category)s = ANY(subcategories))")
@@ -359,6 +379,7 @@ def search_companies(
         FROM companies 
         WHERE {where}
         ORDER BY 
+            {rank_sql}
             CASE WHEN status = 'verified' THEN 0 
                  WHEN status = 'claimed' THEN 1 
                  ELSE 2 END,
