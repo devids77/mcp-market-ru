@@ -154,6 +154,10 @@ API_TOOL_ENDPOINTS = {
     "/api/v1/compare": "free",
     "/api/v1/docs": "free",
     "/api/v1/calculate": "free",
+    "/api/analytics/price-map": "starter",
+    "/api/analytics/market-summary": "starter",
+    "/api/analytics/top-companies": "starter",
+    "/api/analytics/price-tiers": "starter",
     "/api/v1/analytics/market": "starter",
     "/api/v1/analytics/best-companies": "starter",
     "/api/v1/analytics/price-comparison": "starter",
@@ -183,8 +187,9 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         path = request.url.path.rstrip("/") or "/"
         
-        # Skip non-API and public endpoints
-        if not path.startswith("/api/v1/"):
+        # Skip non-API and public endpoints. /api/analytics/* is included
+        # because it duplicates the Starter-tier /api/v1/analytics/* handlers.
+        if not (path.startswith("/api/v1/") or path in ANALYTICS_ENDPOINTS):
             return await call_next(request)
         
         # Get API key
@@ -575,12 +580,12 @@ def compare_companies(
     start = time.time()
     
     ids = [x.strip() for x in company_ids.split(",") if x.strip()]
+    ids = [i for i in ids if _is_uuid(i)]
     if len(ids) < 2:
-        return "Ошибка: укажите минимум 2 ID компаний через запятую."
+        return ("Ошибка: нужны минимум 2 корректных UUID компаний через запятую "
+                "(id берутся из результатов search_companies).")
     if len(ids) > 3:
         ids = ids[:3]
-    
-    ids = [i for i in ids if _is_uuid(i)]
     placeholders = ", ".join([f"%(id{i})s::uuid" for i in range(len(ids))])
     params = {f"id{i}": uid for i, uid in enumerate(ids)}
     
@@ -1430,9 +1435,8 @@ def price_comparison(regions: str = "", category: str = "") -> str:
             
             if regions:
                 region_list = [r.strip() for r in regions.split(",")]
-                placeholders = ",".join(["%s"] * len(region_list))
-                where.append(f"region IN ({placeholders})")
-                params.extend(region_list)
+                where.append("region ~* ANY(%s)")
+                params.append([_region_pattern(r) for r in region_list])
             if category:
                 where.append("(category ILIKE %s OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %s))")
                 params.extend([f"%{category}%", f"%{category}%"])
@@ -2047,7 +2051,9 @@ def trend_analyzer(region: str = "", category: str = "", period: str = "all") ->
         
         return result
     except Exception as e:
-        return f"Error: {str(e)}"
+        print(f"[tool-error] {type(e).__name__}: {e}")
+        return ("Не удалось выполнить запрос к каталогу. "
+                "Попробуйте сузить фильтры или повторить позже.")
 
 
 @mcp.tool()
@@ -2149,7 +2155,9 @@ def company_deep_profile(slug: str) -> str:
         
         return result
     except Exception as e:
-        return f"Error: {str(e)}"
+        print(f"[tool-error] {type(e).__name__}: {e}")
+        return ("Не удалось выполнить запрос к каталогу. "
+                "Попробуйте сузить фильтры или повторить позже.")
 
 
 @mcp.tool()
@@ -2251,7 +2259,9 @@ def region_comparison(regions: str, category: str = "") -> str:
         
         return output
     except Exception as e:
-        return f"Error: {str(e)}"
+        print(f"[tool-error] {type(e).__name__}: {e}")
+        return ("Не удалось выполнить запрос к каталогу. "
+                "Попробуйте сузить фильтры или повторить позже.")
 
 
 @app.get("/api/companies/search")
