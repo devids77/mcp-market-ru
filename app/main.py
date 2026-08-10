@@ -665,6 +665,9 @@ def calculate_cost(
     """
     start = time.time()
     
+    if area is None or area <= 0:
+        return "Площадь должна быть больше 0 м²."
+
     # Get average price per sqm from companies
     conditions = ["price_per_sqm_min IS NOT NULL AND price_per_sqm_min > 0"]
     params = {}
@@ -1803,6 +1806,8 @@ def contractor_recommendation(budget_min: float = 0, budget_max: float = 0, regi
 @mcp.tool()
 def project_estimator(area_sqm: float, region: str = "", category: str = "", quality: str = "standard") -> str:
     """Estimate construction project cost based on area, region, category and quality level (economy/standard/premium). Uses real market data from our database."""
+    if area_sqm is None or area_sqm <= 0:
+        return json.dumps({"error": "area_sqm должна быть больше 0"}, ensure_ascii=False)
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     try:
@@ -1839,6 +1844,8 @@ def project_estimator(area_sqm: float, region: str = "", category: str = "", qua
         
         avg_min = float(stats["avg_min_price"] or 0)
         avg_max = float(stats["avg_max_price"] or 0)
+        if avg_max < avg_min:
+            avg_max = avg_min
         
         estimate_min = round(avg_min * mult * area_sqm)
         estimate_max = round(avg_max * mult * area_sqm)
