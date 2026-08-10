@@ -365,8 +365,8 @@ def search_companies(
         params["category"] = category
     
     if region:
-        conditions.append("(region ILIKE %(region)s OR city ILIKE %(region)s)")
-        params["region"] = f"%{region}%"
+        conditions.append("(region ~* %(region)s OR city ~* %(region)s)")
+        params["region"] = _region_pattern(region)
     
     if budget_max > 0:
         conditions.append("(min_project_price <= %(budget)s OR min_project_price IS NULL)")
@@ -679,8 +679,8 @@ def calculate_cost(
         params["mat_raw"] = material
     
     if region:
-        conditions.append("(region ILIKE %(region)s OR city ILIKE %(region)s)")
-        params["region"] = f"%{region}%"
+        conditions.append("(region ~* %(region)s OR city ~* %(region)s)")
+        params["region"] = _region_pattern(region)
     
     where = " AND ".join(conditions)
     
@@ -2655,8 +2655,8 @@ async def dashboard_companies(region: str = "", category: str = "", limit: int =
     params = {}
     
     if region:
-        conditions.append("(region ILIKE %(region)s OR city ILIKE %(region)s)")
-        params["region"] = f"%{region}%"
+        conditions.append("(region ~* %(region)s OR city ~* %(region)s)")
+        params["region"] = _region_pattern(region)
     
     if category:
         conditions.append("(category = %(category)s OR %(category)s = ANY(subcategories))")
@@ -4371,6 +4371,27 @@ def export_search_csv(
         conn.close()
 
 
+_REGION_ALIASES = {
+    "москва": r"москв|московск", "московская": r"москв|московск",
+    "санкт-петербург": r"петербург|ленинград", "петербург": r"петербург|ленинград",
+    "спб": r"петербург|ленинград", "питер": r"петербург|ленинград",
+    "ленинградская": r"петербург|ленинград",
+    "екатеринбург": r"екатеринбург|свердлов", "свердловская": r"екатеринбург|свердлов",
+    "казань": r"казан|татарстан", "нижний новгород": r"нижн|нижегород",
+    "уфа": r"уфа|башкортостан",
+}
+
+
+def _region_pattern(region: str) -> str:
+    """POSIX-regex stem for `region ~*`, so a city query (Москва) still
+    matches the stored oblast (Московская область)."""
+    import re as _re
+    r = (region or "").strip().lower()
+    if r in _REGION_ALIASES:
+        return _REGION_ALIASES[r]
+    return _re.sub(r"[аяьеёи]$", "", r) or r
+
+
 @mcp.tool()
 def smart_match(brief: str, top_n: int = 5) -> str:
     """
@@ -4447,8 +4468,8 @@ def smart_match(brief: str, top_n: int = 5) -> str:
             params = {}
             conditions = ["1=1"]
             if region:
-                conditions.append("(region ILIKE %(region)s)")
-                params["region"] = f"%{region}%"
+                conditions.append("(region ~* %(region)s OR city ~* %(region)s)")
+                params["region"] = _region_pattern(region)
             if category:
                 conditions.append("(category ILIKE %(category)s)")
                 params["category"] = f"%{category}%"
