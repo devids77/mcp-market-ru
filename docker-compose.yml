@@ -21,7 +21,9 @@ services:
       timeout: 5s
       retries: 5
   mcp-server:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
     container_name: mcp-server
     env_file: .env
     # TG_EXTRA_HOSTS_FIX: pin api.telegram.org to working CDN IP (RU CDN block workaround)

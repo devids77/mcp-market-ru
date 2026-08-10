@@ -7,6 +7,8 @@
 [![Projects](https://img.shields.io/badge/projects-20322-green)](https://mcp-market.ru/dashboard)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#license)
 
+Listed in the [official MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.devids77/mcp-market-ru`.
+
 ## What this is
 
 A live, hosted MCP server that gives AI agents (Claude Desktop, Cursor, Cline, Continue, etc.) direct access to a curated catalog of Russian construction companies and home-building projects, complete with pricing, ratings, regions, photos and contact info aggregated from public sources.
@@ -31,7 +33,7 @@ Add:
 }
 ```
 
-Restart Claude Desktop. The 21 tools are now available — Claude will call them automatically when you ask construction-related questions.
+Restart Claude Desktop. The 24 tools are now available — Claude will call them automatically when you ask construction-related questions.
 
 ## Quick start — Cursor
 
