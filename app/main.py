@@ -4486,9 +4486,9 @@ def smart_match(brief: str, top_n: int = 5) -> str:
                 WHERE {where}
                 -- A contractor the agent cannot phone or look up is a dead
                 -- lead, so contactable companies outrank uncontactable ones.
-                ORDER BY ((CASE WHEN phone IS NOT NULL AND phone <> '' THEN 2 ELSE 0 END)
-                        + (CASE WHEN website IS NOT NULL AND website <> '' THEN 1 ELSE 0 END)) DESC,
-                         rating DESC NULLS LAST, reviews_count DESC NULLS LAST
+                ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST,
+                            ((CASE WHEN phone IS NOT NULL AND phone <> '' THEN 2 ELSE 0 END)
+                            + (CASE WHEN website IS NOT NULL AND website <> '' THEN 1 ELSE 0 END)) DESC
                 LIMIT %(lim)s
             """
             cur.execute(sql, params)
