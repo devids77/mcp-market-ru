@@ -62,8 +62,18 @@ async def validate_api_key(request: Request, tool_name: str = None):
             conn.close()
             return None
         
-        # Check rate limit (-1 = unlimited)
-        if key_data["requests_limit"] != -1 and key_data["requests_used"] >= key_data["requests_limit"]:
+        # Quotas are advertised per day, so count today's calls rather than the
+        # lifetime requests_used counter (which is kept only as a running total).
+        try:
+            cur.execute(
+                "SELECT COUNT(*) AS c FROM usage_logs "
+                "WHERE api_key_id = %s AND created_at >= CURRENT_DATE",
+                (key_data["id"],))
+            used_today = int((cur.fetchone() or {}).get("c") or 0)
+        except Exception:
+            used_today = int(key_data["requests_used"] or 0)
+
+        if key_data["requests_limit"] != -1 and used_today >= key_data["requests_limit"]:
             conn.close()
             return {"error": "rate_limit_exceeded", "plan": key_data["plan"]}
         
@@ -93,7 +103,7 @@ async def validate_api_key(request: Request, tool_name: str = None):
         return {
             "plan": key_data["plan"],
             "tools": plan_tools.get(key_data["plan"], FREE_TOOLS),
-            "requests_used": key_data["requests_used"] + 1,
+            "requests_used": used_today + 1,
             "requests_limit": key_data["requests_limit"]
         }
     except Exception as e:
@@ -364,8 +374,11 @@ def search_companies(
         rank_sql = "ts_rank(" + _vec + ", websearch_to_tsquery('russian', %(query)s)) DESC,"
     
     if category:
-        conditions.append("(category = %(category)s OR %(category)s = ANY(subcategories))")
-        params["category"] = category
+        conditions.append(
+            "(category ILIKE %(category_like)s"
+            " OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %(category_like)s)"
+            " OR EXISTS (SELECT 1 FROM unnest(tags) _tg WHERE _tg ILIKE %(category_like)s))")
+        params["category_like"] = "%" + category + "%"
     
     if region:
         conditions.append("(region ~* %(region)s OR city ~* %(region)s)")
@@ -1272,7 +1285,7 @@ def market_analytics(region: str = "", category: str = "") -> str:
             
             # Top 10 by rating
             cur.execute(f"""
-                SELECT slug, region, rating, reviews_count, price_per_sqm_min, price_per_sqm_max, phone, website
+                SELECT id, slug, name, region, rating, reviews_count, price_per_sqm_min, price_per_sqm_max, phone, website
                 FROM companies {where_sql}
                 ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST
                 LIMIT 10
@@ -1376,7 +1389,7 @@ def find_best_companies(
             limit = min(max(limit, 1), 50)
             
             cur.execute(f"""
-                SELECT slug, category, region, city, rating, reviews_count,
+                SELECT id, slug, name, category, region, city, rating, reviews_count,
                     price_per_sqm_min, price_per_sqm_max, phone, email, website,
                     projects_count, description
                 FROM companies {where_sql}
@@ -1458,7 +1471,7 @@ def price_comparison(regions: str = "", category: str = "") -> str:
             
             # Best value: high rating + low price
             cur.execute(f"""
-                SELECT slug, region, category, rating, reviews_count,
+                SELECT id, slug, name, region, category, rating, reviews_count,
                     price_per_sqm_min, price_per_sqm_max, phone, website
                 FROM companies {where_sql} AND rating >= 4.0
                 ORDER BY price_per_sqm_min ASC
@@ -1599,18 +1612,18 @@ def market_report(region: str) -> str:
             
             # Top 5 by rating
             cur.execute("""
-                SELECT slug, category, rating, reviews_count, 
+                SELECT id, slug, name, category, rating, reviews_count, 
                     price_per_sqm_min, price_per_sqm_max, phone, website
                 FROM companies 
                 WHERE region ~* %s AND rating IS NOT NULL
-                ORDER BY rating DESC, reviews_count DESC
+                ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST
                 LIMIT 5
             """, (_region_pattern(region),))
             top_companies = [dict(r) for r in cur.fetchall()]
             
             # Top 5 most affordable with good rating
             cur.execute("""
-                SELECT slug, category, rating, reviews_count, 
+                SELECT id, slug, name, category, rating, reviews_count, 
                     price_per_sqm_min, price_per_sqm_max, phone, website
                 FROM companies 
                 WHERE region ~* %s AND price_per_sqm_min IS NOT NULL AND rating >= 4.0
@@ -1863,7 +1876,12 @@ def project_estimator(area_sqm: float, region: str = "", category: str = "", qua
             return json.dumps({"error": "Недостаточно данных для оценки. Попробуйте другой регион или категорию."}, ensure_ascii=False)
         
         quality_multipliers = {"economy": 0.7, "standard": 1.0, "premium": 1.5, "luxury": 2.0}
-        mult = quality_multipliers.get(quality, 1.0)
+        if quality not in quality_multipliers:
+            return json.dumps({
+                "error": "quality must be one of: economy, standard, premium, luxury",
+                "received": quality,
+            }, ensure_ascii=False)
+        mult = quality_multipliers[quality]
         
         avg_min = float(stats["avg_min_price"] or 0)
         avg_max = float(stats["avg_max_price"] or 0)
@@ -1878,7 +1896,7 @@ def project_estimator(area_sqm: float, region: str = "", category: str = "", qua
         cur.execute(f"""
             SELECT name, slug, rating, price_per_sqm_min, price_per_sqm_max
             FROM companies WHERE {where_sql} AND rating >= 4.0
-            ORDER BY rating DESC, reviews_count DESC
+            ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST
             LIMIT 5
         """, params)
         recommended = cur.fetchall()
@@ -2058,7 +2076,7 @@ def company_deep_profile(slug: str) -> str:
             SELECT slug, name, rating, reviews_count, price_per_sqm_min, price_per_sqm_max
             FROM companies 
             WHERE region = %s AND category = %s AND slug != %s AND rating > 0
-            ORDER BY rating DESC, reviews_count DESC
+            ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST
             LIMIT 5
         """, (company['region'], company['category'], slug))
         competitors = cur.fetchall()
@@ -2682,8 +2700,11 @@ async def dashboard_companies(region: str = "", category: str = "", limit: int =
         params["region"] = _region_pattern(region)
     
     if category:
-        conditions.append("(category = %(category)s OR %(category)s = ANY(subcategories))")
-        params["category"] = category
+        conditions.append(
+            "(category ILIKE %(category_like)s"
+            " OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %(category_like)s)"
+            " OR EXISTS (SELECT 1 FROM unnest(tags) _tg WHERE _tg ILIKE %(category_like)s))")
+        params["category_like"] = "%" + category + "%"
     
     where = " AND ".join(conditions)
     rows = query_db(f"""
@@ -2956,7 +2977,7 @@ async def api_top_companies(region: str = "", category: str = "", limit: int = 1
             limit = min(max(limit, 1), 50)
             
             cur.execute(f"""
-                SELECT slug, category, region, city, rating, reviews_count,
+                SELECT id, slug, name, category, region, city, rating, reviews_count,
                     price_per_sqm_min, price_per_sqm_max, phone, email, website,
                     projects_count
                 FROM companies {where_sql}
@@ -3686,7 +3707,7 @@ async def api_analytics_report(request: Request, region: str = None, category: s
         top_categories = [dict(r) for r in cur.fetchall()]
 
         # Top companies
-        cur.execute(f"SELECT name, slug, region, category, rating, reviews_count FROM companies {where_sql} ORDER BY rating DESC, reviews_count DESC LIMIT 10", params)
+        cur.execute(f"SELECT name, slug, region, category, rating, reviews_count FROM companies {where_sql} ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST LIMIT 10", params)
         top_companies = [dict(r) for r in cur.fetchall()]
 
         cur.close()
