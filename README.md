@@ -1,10 +1,10 @@
 # MCP Market Russia 🏗️
 
-**MCP server for the Russian construction and real estate market.** Search 3,395 construction companies, browse 20,322 house projects, compare prices, request quotes — all via the [Model Context Protocol](https://modelcontextprotocol.io) or REST API.
+**MCP server for the Russian construction and real estate market.** Search 3,395 construction companies, browse 4,468 house projects, compare prices, request quotes — all via the [Model Context Protocol](https://modelcontextprotocol.io) or REST API.
 
 [![Live](https://img.shields.io/badge/live-mcp--market.ru-blue)](https://mcp-market.ru)
 [![Stats](https://img.shields.io/badge/companies-3395-green)](https://mcp-market.ru/dashboard)
-[![Projects](https://img.shields.io/badge/projects-20322-green)](https://mcp-market.ru/dashboard)
+[![Projects](https://img.shields.io/badge/projects-4468-green)](https://mcp-market.ru/dashboard)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#license)
 
 Listed in the [official MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.devids77/mcp-market-ru`.
@@ -111,7 +111,7 @@ Get a key at [https://mcp-market.ru/pricing](https://mcp-market.ru/pricing).
 ## Data
 
 - **3,395 companies** aggregated from public sources (2GIS, Avito, construction catalogs, Yandex)
-- **20,322 projects** with specs, materials, area, price, photos
+- **4,468 projects** with specs, materials, area, price, photos
 - **18 regions** covered (Moscow, St Petersburg, Krasnodar, Yekaterinburg, …)
 - **67% tagged** via regex + GLM-4.6 classifier — search by tag works for queries like "bath house in Krasnodar"
 - **Live data:** companies and projects refreshed periodically; check [`/dashboard`](https://mcp-market.ru/dashboard) for current counts

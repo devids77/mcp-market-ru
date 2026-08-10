@@ -304,7 +304,7 @@ mcp = FastMCP(
     "MCP Market Russia",
     version="3.2.0",
     instructions="""Russian construction companies and house projects catalog for AI agents.
-3,395 companies and 20,322 house projects across 18 regions. Data is scraped from 2GIS
+3,395 companies and 4,468 house projects across 18 regions. Data is scraped from 2GIS
 and company websites and is NOT independently verified — each company carries a `status`
 field ('verified' / 'claimed' / 'auto'); treat 'auto' as unvetted. Contact details are
 missing for many companies rather than guessed.
@@ -515,6 +515,7 @@ def search_projects(
           AND COALESCE(p.url, '') NOT ILIKE '%%restate%%'
           AND COALESCE(p.url, '') NOT ILIKE '%%snyat%%'
           AND COALESCE(p.source_url, '') NOT ILIKE '%%snyat%%'
+          AND COALESCE(p.source, '') <> 'generated'
         ORDER BY c.rating DESC NULLS LAST, p.price DESC NULLS LAST
         LIMIT {max(1, min(int(limit), 50))}
     """
@@ -898,7 +899,7 @@ def get_project(project_id: str) -> str:
         """SELECT p.*, c.name as company_name, c.phone as company_phone, 
                   c.website as company_website, c.id as company_id
            FROM projects p JOIN companies c ON p.company_id = c.id 
-           WHERE p.id::text = %(id)s""",
+           WHERE p.id::text = %(id)s AND COALESCE(p.source, '') <> 'generated'""",
         {"id": project_id}, 1
     )
     
@@ -1019,7 +1020,7 @@ def get_stats() -> str:
     stats = {}
     for key, sql in [
         ("companies", "SELECT COUNT(*) as c FROM companies"),
-        ("projects", "SELECT COUNT(*) as c FROM projects"),
+        ("projects", "SELECT COUNT(*) as c FROM projects p WHERE COALESCE(p.source, '') <> 'generated'"),
         ("regions", "SELECT COUNT(DISTINCT region) as c FROM companies WHERE region IS NOT NULL"),
         ("categories", "SELECT COUNT(DISTINCT category) as c FROM companies WHERE category IS NOT NULL"),
         ("queries_today", "SELECT COUNT(*) as c FROM agent_queries WHERE timestamp > CURRENT_DATE"),
@@ -3447,6 +3448,7 @@ async def api_v1_search_projects(
         if max_area > 0:
             conditions.append("p.area <= %s")
             params.append(max_area)
+        conditions.append("COALESCE(p.source, '') <> 'generated'")
         
         where = "WHERE " + " AND ".join(conditions) if conditions else ""
         
@@ -3534,7 +3536,7 @@ async def api_v1_stats():
         cur.execute("""
             SELECT 
                 (SELECT COUNT(*) FROM companies) as total_companies,
-                (SELECT COUNT(*) FROM projects) as total_projects,
+                (SELECT COUNT(*) FROM projects p WHERE COALESCE(p.source, '') <> 'generated') as total_projects,
                 (SELECT COUNT(DISTINCT region) FROM companies WHERE region IS NOT NULL) as regions,
                 (SELECT COUNT(DISTINCT category) FROM companies WHERE category IS NOT NULL) as categories,
                 (SELECT AVG(rating) FROM companies WHERE rating IS NOT NULL) as avg_rating,
