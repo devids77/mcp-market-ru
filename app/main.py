@@ -2340,11 +2340,52 @@ def company_profile(company_id: str):
     phone = html.escape(row.get("phone","") or "")
     web = html.escape(row.get("website","") or "")
     rc = row.get("reviews_count",0) or 0
+    import json as _json
+    _curl = f"https://mcp-market.ru/company/{company_id}"
+    _ld = {
+        "@context": "https://schema.org",
+        "@type": "HomeAndConstructionBusiness",
+        "@id": _curl + "#business",
+        "name": row.get("name") or "",
+        "url": _curl,
+    }
+    if row.get("city"):
+        _ld["address"] = {"@type": "PostalAddress",
+                          "addressLocality": row.get("city"), "addressCountry": "RU"}
+    if row.get("category"):
+        _ld["knowsAbout"] = row.get("category")
+    if row.get("phone"):
+        _ld["telephone"] = row.get("phone")
+    if row.get("website"):
+        _ld["sameAs"] = row.get("website")
+    if row.get("description"):
+        _ld["description"] = (row.get("description") or "")[:300]
+    try:
+        _rv = float(rating)
+    except (TypeError, ValueError):
+        _rv = 0.0
+    if _rv > 0 and rc and int(rc) > 0:
+        _ld["aggregateRating"] = {"@type": "AggregateRating",
+                                  "ratingValue": round(_rv, 1),
+                                  "reviewCount": int(rc), "bestRating": 5}
+    _ldjson = _json.dumps(_ld, ensure_ascii=False).replace("<", "\\u003c")
+    _ogt = html.escape((row.get("name") or "") + " — MCP Market Russia")
+    seo_extra = (
+        '<meta name="robots" content="index, follow, max-image-preview:large">'
+        '<meta property="og:type" content="website">'
+        '<meta property="og:site_name" content="MCP Market">'
+        '<meta property="og:locale" content="ru_RU">'
+        f'<meta property="og:title" content="{_ogt}">'
+        f'<meta property="og:description" content="{desc[:200]}">'
+        f'<meta property="og:url" content="{_curl}">'
+        '<script type="application/ld+json">' + _ldjson + '</script>'
+    )
     page_html = f"""<!DOCTYPE html>
 <html lang="ru"><head>
 <meta charset="utf-8">
 <title>{n} — MCP Market Russia</title>
 <meta name="description" content="{n}, {cat}, {city}. {desc[:160]}">
+{seo_extra}
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="canonical" href="https://mcp-market.ru/company/{html.escape(company_id)}">
 <style>body{{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;color:#333}}
