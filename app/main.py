@@ -1930,8 +1930,12 @@ def project_estimator(area_sqm: float, region: str = "", category: str = "", qua
 
 @mcp.tool()
 def trend_analyzer(region: str = "", category: str = "", period: str = "all") -> str:
-    """Analyze market trends - company growth, price dynamics, rating changes by region/category.
-    Shows how the construction market is developing over time."""
+    """Current market snapshot by region, category, rating tier and price segment.
+
+    This is a distribution of the catalogue as it stands now, not a time series:
+    we do not store historical snapshots, so no growth or change-over-time can be
+    computed. `period` is accepted for backwards compatibility and ignored.
+    """
     try:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -3400,7 +3404,7 @@ async def api_v1_search_companies(
             FROM companies c {where}
             ORDER BY c.rating DESC NULLS LAST
             LIMIT %s OFFSET %s
-        """, params + [min(limit, 50), offset])
+        """, params + [max(1, min(int(limit), 50)), max(0, int(offset))])
         
         companies = cur.fetchall()
         
@@ -3451,11 +3455,18 @@ async def api_v1_search_projects(
             FROM projects p JOIN companies c ON p.company_id = c.id {where}
             ORDER BY p.id DESC
             LIMIT %s OFFSET %s
-        """, params + [min(limit, 50), offset])
+        """, params + [max(1, min(int(limit), 50)), max(0, int(offset))])
         
         projects = cur.fetchall()
+        cur.execute(f"""
+            SELECT COUNT(*) AS total
+            FROM projects p JOIN companies c ON p.company_id = c.id {where}
+        """, params)
+        total = int((cur.fetchone() or {}).get("total") or 0)
         conn.close()
-        return {"total": len(projects), "projects": projects}
+        return {"total": total, "count": len(projects),
+                "limit": max(1, min(int(limit), 50)), "offset": max(0, int(offset)),
+                "projects": projects}
     except Exception as e:
         return {"error": str(e)}
 
@@ -4569,11 +4580,17 @@ def smart_match(brief: str, top_n: int = 5) -> str:
             "budget_rub": budget or None,
             "quality": quality,
         },
+        "applied_filters": [k for k, v in (("region", region), ("category", category),
+                                          ("budget_rub", budget)) if v],
+        "recognized_but_not_applied": [k for k, v in (("area_sqm", area),
+                                                      ("quality", quality)) if v],
         "matches": matches,
         "explanation": (
-            f"Разобрано: регион={region or 'любой'}, категория={category or 'любая'}, "
-            f"площадь={area or '?'} кв.м, бюджет={budget or '?'} руб, класс={quality}. "
-            f"Найдено {len(matches)} подрядчиков, сортировка по rating и числу отзывов."
+            f"Отфильтровано по: регион={region or 'любой'}, категория={category or 'любая'}, "
+            f"бюджет={budget or 'без ограничения'} руб. "
+            f"Площадь ({area or '?'} кв.м) и класс ({quality}) распознаны в запросе, "
+            f"но в подборе не участвуют — по ним у нас нет надёжных данных. "
+            f"Найдено {len(matches)} подрядчиков, сортировка по рейтингу и числу отзывов."
         ),
     }
     return _json.dumps(result, ensure_ascii=False, default=str)
@@ -4599,7 +4616,7 @@ def get_lead_status(lead_id: str, api_key: str) -> str:
                 return _json.dumps({"error": "Invalid or inactive api_key"})
 
             cur.execute("""
-                SELECT l.id, l.status, l.name, l.phone, l.email, l.comment,
+                SELECT l.id, l.status, l.phone, l.email,
                        l.created_at, l.sent_to_crm_at,
                        c.name AS company_name
                 FROM leads l
