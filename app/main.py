@@ -207,7 +207,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 content={
                     "error": "API key required",
                     "message": "Provide API key via X-API-Key header or api_key query parameter",
-                    "get_key": "http://212.193.27.12:8000/pricing"
+                    "get_key": "https://mcp-market.ru/pricing"
                 }
             )
         
@@ -216,7 +216,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         if key_info is None:
             return StarletteJSONResponse(
                 status_code=403,
-                content={"error": "Invalid API key", "get_key": "http://212.193.27.12:8000/pricing"}
+                content={"error": "Invalid API key", "get_key": "https://mcp-market.ru/pricing"}
             )
         
         if isinstance(key_info, dict) and "error" in key_info:
@@ -234,7 +234,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 status_code=403,
                 content={
                     "error": f"Plan '{user_plan}' insufficient. Requires '{required_plan}' or higher.",
-                    "upgrade": "http://212.193.27.12:8000/pricing",
+                    "upgrade": "https://mcp-market.ru/pricing",
                     "current_plan": user_plan,
                     "required_plan": required_plan
                 }
@@ -2966,7 +2966,9 @@ async def register_api_key(request: Request):
         name = data.get("name", "").strip()
         email = data.get("email", "").strip()
         phone = data.get("phone", "")
-        plan = data.get("plan", "free")
+        # SECURITY: self-service registration ALWAYS issues a free key.
+        # Paid plans are granted only by the payment flow.
+        plan = "free"
         
         if not name or not email:
             return JSONResponse({"error": "Name and email required"}, status_code=400)
@@ -3055,8 +3057,10 @@ async def create_lead(request: Request):
 
 
 @app.get("/api/leads")
-async def get_leads(status: str = "", limit: int = 50):
-    """Get leads list"""
+async def get_leads(request: Request, status: str = "", limit: int = 50):
+    """Admin: leads list (personal data). Requires X-Admin-Token."""
+    if not _require_admin(request):
+        return JSONResponse({"error": "Admin authentication required"}, status_code=401)
     try:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -3097,8 +3101,10 @@ async def toggle_api_key(key_id: int):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 @app.get("/api/keys")
-async def get_api_keys():
-    """Get API keys stats (admin)"""
+async def get_api_keys(request: Request):
+    """Admin: API key owners and usage. Requires X-Admin-Token."""
+    if not _require_admin(request):
+        return JSONResponse({"error": "Admin authentication required"}, status_code=401)
     try:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -3116,8 +3122,10 @@ async def get_api_keys():
 
 
 @app.get("/api/usage/stats")
-async def get_usage_stats():
-    """Get usage statistics for billing"""
+async def get_usage_stats(request: Request):
+    """Admin: billing usage statistics. Requires X-Admin-Token."""
+    if not _require_admin(request):
+        return JSONResponse({"error": "Admin authentication required"}, status_code=401)
     try:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -3624,18 +3632,18 @@ async def api_v1_docs():
     """REST API documentation."""
     return {
         "api_version": "1.0",
-        "base_url": "http://212.193.27.12:8000/api/v1",
+        "base_url": "https://mcp-market.ru/api/v1",
         "authentication": {
             "method": "API Key",
             "header": "X-API-Key",
             "query_param": "api_key",
-            "get_key": "http://212.193.27.12:8000/pricing"
+            "get_key": "https://mcp-market.ru/pricing"
         },
         "plans": {
             "free": {"price": "0 RUB/month", "rate_limit": "100 req/day", "endpoints": "search, compare, categories, regions, stats"},
-            "starter": {"price": "2990 RUB/month", "rate_limit": "5000 req/day", "endpoints": "free + analytics (market, best-companies, price-comparison)"},
-            "pro": {"price": "7990 RUB/month", "rate_limit": "25000 req/day", "endpoints": "starter + AI tools (reviews, recommend, estimate, trends)"},
-            "enterprise": {"price": "24990 RUB/month", "rate_limit": "100000 req/day", "endpoints": "all + priority support"}
+            "starter": {"price": "2990 RUB/month", "rate_limit": "1000 req/day", "endpoints": "free + analytics (market, best-companies, price-comparison)"},
+            "pro": {"price": "7990 RUB/month", "rate_limit": "5000 req/day", "endpoints": "starter + AI tools (reviews, recommend, estimate, trends)"},
+            "enterprise": {"price": "24990 RUB/month", "rate_limit": "unlimited", "endpoints": "all + priority support"}
         },
         "endpoints": {
             "free_tier": [
@@ -3924,13 +3932,23 @@ async def api_v1_ai_region_compare(regions: str = ""):
 import hashlib, secrets
 from datetime import datetime, timedelta
 
+def _require_admin(request) -> bool:
+    """Admin endpoints are gated by ADMIN_TOKEN from the environment.
+    If ADMIN_TOKEN is unset, admin endpoints stay closed (fail-closed)."""
+    import os as _os
+    expected = _os.environ.get("ADMIN_TOKEN", "")
+    if not expected:
+        return False
+    return secrets.compare_digest(request.headers.get("x-admin-token", ""), expected)
+
+
 CRYPTO_WALLETS = {
     "BTC": "bc1qmcp2026market0russia0pay0btc0wallet",
     "ETH": "0xMCP2026MarketRussiaPay0ETH0Wallet00",
     "USDT": "TMcp2026MarketRussiaPayUSDTWallet00"
 }
 
-PLAN_PRICES = {"starter": 2990, "pro": 9990, "enterprise": 24990}
+PLAN_PRICES = {"starter": 2990, "pro": 7990, "enterprise": 24990}
 CRYPTO_RATES_PER_RUB = {"BTC": 0.0000001149, "ETH": 0.00000345, "USDT": 0.012}
 
 @app.post("/api/payments/create")
@@ -4014,7 +4032,9 @@ async def get_payment_status(payment_id: str):
 
 @app.post("/api/payments/{payment_id}/confirm")
 async def confirm_payment(payment_id: str, request: Request):
-    """Admin: confirm payment and create API key"""
+    """Admin: confirm payment and create API key. Requires X-Admin-Token."""
+    if not _require_admin(request):
+        return JSONResponse({"error": "Admin authentication required"}, status_code=401)
     try:
         data = await request.json()
         tx_hash = data.get("tx_hash", "")
@@ -4060,8 +4080,10 @@ async def confirm_payment(payment_id: str, request: Request):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 @app.get("/api/payments")
-async def list_payments():
-    """Admin: list all payments"""
+async def list_payments(request: Request):
+    """Admin: list all payments. Requires X-Admin-Token."""
+    if not _require_admin(request):
+        return JSONResponse({"error": "Admin authentication required"}, status_code=401)
     try:
         conn = get_db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)

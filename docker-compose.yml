@@ -37,6 +37,7 @@ services:
       SERVER_URL: https://mcp-market.ru
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
     depends_on:
       db:
         condition: service_healthy
