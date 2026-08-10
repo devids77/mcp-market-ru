@@ -1,7 +1,7 @@
 """
 MCP Market Russia — Russian construction companies catalog for AI agents
 First business MCP server catalog for the Russian market
-Version: 3.1.1
+Version: 3.2.0
 """
 import json
 import time
@@ -292,6 +292,7 @@ def log_query(tool_name: str, params: dict, results_count: int, duration_ms: int
 
 mcp = FastMCP(
     "MCP Market Russia",
+    version="3.2.0",
     instructions="""Russian construction companies and house projects catalog for AI agents.
 3,400+ verified companies across 20 cities. Real data from 2GIS and company websites.
 
@@ -1164,7 +1165,7 @@ openapi_tags = [
 app = FastAPI(
     title="MCP Market Russia",
     description="Russian construction companies and house projects catalog for AI agents",
-    version="3.1.1",
+    version="3.2.0",
     lifespan=mcp_app.lifespan,
     openapi_tags=openapi_tags,
 )
@@ -2301,7 +2302,7 @@ async def root():
         "name": "MCP Market Russia",
         "description": "Russian construction companies catalog for AI agents",
         "mcp_endpoint": settings.SERVER_URL + "/mcp",
-        "version": "3.1.1",
+        "version": "3.2.0",
         "tools": 21,
         "docs": "/docs",
     }
@@ -2444,7 +2445,7 @@ async def stats():
             "projects": projects,
             "queries_today": queries_today,
             "leads_total": leads,
-            "version": "3.1.1",
+            "version": "3.2.0",
         }
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "detail": str(e)})
