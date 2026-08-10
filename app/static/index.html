@@ -804,14 +804,6 @@
                 setTimeout(() => toast.remove(), 300);
             }, duration);
         }
-
-        @keyframes slideOut {
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
         // Check login status
         function checkLogin() {
             return !!localStorage.getItem('auth_token');

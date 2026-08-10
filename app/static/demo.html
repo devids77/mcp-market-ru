@@ -150,7 +150,7 @@ async function ask(e){if(e)e.preventDefault();const q=qEl.value.trim();if(!q)ret
       const r = await fetch('/api/v1/smart-match?top_n=3&brief=' + encodeURIComponent(q));
       const d = await r.json();
       if (!r.ok) {
-        result.innerHTML = '<div style="color:#ef4444">Ошибка: ' + (d.error || r.status) + '</div>';
+        result.innerHTML = '<div style="color:#ef4444">Ошибка: ' + esc(String(d.error || r.status)) + '</div>';
       } else {
         const p = d.parsed || {}, chips = [];
         if (p.region) chips.push('регион: <b>' + p.region + '</b>');
@@ -169,7 +169,7 @@ async function ask(e){if(e)e.preventDefault();const q=qEl.value.trim();if(!q)ret
         result.innerHTML = html;
       }
       status.textContent = 'Готово · /api/v1/smart-match';
-    } catch(e) { result.innerHTML = '<div style="color:#ef4444">Ошибка сети: ' + e.message + '</div>'; status.textContent = ''; }
+    } catch(e) { result.innerHTML = '<div style="color:#ef4444">Ошибка сети: ' + esc(String(e.message)) + '</div>'; status.textContent = ''; }
     finally { btn.disabled = false; }
   });
 })();

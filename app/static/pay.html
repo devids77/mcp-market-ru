@@ -792,7 +792,7 @@
                         <div id="payment-card" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">Номер карты</label>
-                                <input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19">
+                                <input type="text" class="form-input" value="" disabled placeholder="Оплата картой пока недоступна">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -891,14 +891,6 @@
                 setTimeout(() => toast.remove(), 300);
             }, duration);
         }
-
-        @keyframes slideOut {
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
         // Check login status
         function checkLogin() {
             return !!localStorage.getItem('auth_token');
@@ -1049,24 +1041,23 @@
         const email = document.getElementById('email').value;
 
         try {
-            const response = await fetch('/api/payments/create', {
+            // No payment processor is connected and the crypto wallets on file
+            // are not valid addresses, so we must not take money here. Collect the
+            // request and let a human invoice it.
+            const response = await fetch('/api/leads/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    plan: selectedPlan,
-                    price: selectedPrice,
                     name: name,
                     email: email,
-                    method: paymentMethod
+                    comment: 'Заявка на тариф ' + selectedPlan + ' (' + selectedPrice + ' руб/мес) со страницы оплаты'
                 })
             });
 
-            const data = await response.json();
-            if (data.success) {
-                showToast('Спасибо за оплату! Проверьте email', 'success');
-                setTimeout(() => window.location.href = '/dashboard', 2000);
+            if (response.ok) {
+                showToast('Заявка принята — выставим счёт на ' + email, 'success');
             } else {
-                showToast(data.error || 'Ошибка платежа', 'error');
+                showToast('Не удалось отправить заявку. Напишите на scandiecodom@gmail.com', 'error');
             }
         } catch (error) {
             showToast('Ошибка обработки платежа', 'error');
@@ -1078,7 +1069,7 @@
     const planParam = params.get('plan');
     if (planParam === 'pro') {
         const proCard = document.querySelectorAll('.plan-option')[1];
-        selectPlan(proCard, 'pro', 9990);
+        selectPlan(proCard, 'pro', 7990);
     }
     </script>
 </body>

@@ -31,7 +31,7 @@ services:
       - "api.telegram.org:149.154.167.220"
     restart: always
     ports:
-    - 0.0.0.0:8000:8000
+    - 127.0.0.1:8000:8000
     environment:
       DATABASE_URL: postgresql+asyncpg://mcpuser:${DB_PASSWORD:?DB_PASSWORD must be set in .env}@db:5432/mcpmarket
       DATABASE_URL_SYNC: postgresql://mcpuser:${DB_PASSWORD:?DB_PASSWORD must be set in .env}@db:5432/mcpmarket

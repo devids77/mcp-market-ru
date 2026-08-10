@@ -792,14 +792,6 @@
                 setTimeout(() => toast.remove(), 300);
             }, duration);
         }
-
-        @keyframes slideOut {
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
         // Check login status
         function checkLogin() {
             return !!localStorage.getItem('auth_token');
@@ -859,11 +851,13 @@
         
 
     <script>
-    const ADMIN_PASSWORD = 'admin123'; // Очень простой пароль для примера!
+    // The real gate is server-side: admin endpoints check the ADMIN_TOKEN
+    // header. Never keep a password in markup the whole internet can read.
+    const ADMIN_PASSWORD = null;
 
     function adminLogin() {
         const password = document.getElementById('admin-password').value;
-        if (password === ADMIN_PASSWORD) {
+        if (ADMIN_PASSWORD && password === ADMIN_PASSWORD) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('admin-panel').style.display = 'block';
             localStorage.setItem('admin_logged_in', 'true');

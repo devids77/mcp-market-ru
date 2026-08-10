@@ -704,14 +704,6 @@
                 setTimeout(() => toast.remove(), 300);
             }, duration);
         }
-
-        @keyframes slideOut {
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
         // Check login status
         function checkLogin() {
             return !!localStorage.getItem('auth_token');
@@ -786,6 +778,13 @@
         const password = form.querySelector('input[type="password"]').value;
 
         try {
+            showToast('Вход по паролю пока не поддерживается — ключ выдаётся один раз при регистрации', 'info');
+            const loginErr = document.getElementById('login-error');
+            if (loginErr) {
+                loginErr.style.display = 'block';
+                loginErr.textContent = 'Входа по паролю нет: API-ключ выдаётся один раз при регистрации. Потеряли ключ — напишите на scandiecodom@gmail.com.';
+            }
+            return false;
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -794,8 +793,8 @@
 
             const data = await response.json();
 
-            if (response.ok && data.token) {
-                setAuthToken(data.token);
+            if (response.ok && data.api_key) {
+                setAuthToken(data.api_key);
                 setUserEmail(email);
                 showToast('Добро пожаловать! 🎉', 'success');
                 setTimeout(() => window.location.href = '/dashboard', 1000);
@@ -834,11 +833,14 @@
 
             const data = await response.json();
 
-            if (response.ok && data.token) {
-                setAuthToken(data.token);
+            if (response.ok && data.api_key) {
+                setAuthToken(data.api_key);
                 setUserEmail(email);
-                showToast('Аккаунт создан! Добро пожаловать! 🎉', 'success');
-                setTimeout(() => window.location.href = '/dashboard', 1000);
+                const okEl = document.getElementById('register-error');
+                okEl.style.display = 'block';
+                okEl.style.color = '#10b981';
+                okEl.textContent = 'API-ключ: ' + data.api_key + ' — сохраните его, повторно он не показывается.';
+                showToast('Аккаунт создан. Скопируйте ключ!', 'success');
             } else {
                 const errorEl = document.getElementById('register-error');
                 errorEl.textContent = data.error || 'Ошибка регистрации. Попробуйте ещё раз';
