@@ -4389,7 +4389,11 @@ def smart_match(brief: str, top_n: int = 5) -> str:
                        min_project_price, max_project_price, phone, website
                 FROM companies
                 WHERE {where}
-                ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST
+                -- A contractor the agent cannot phone or look up is a dead
+                -- lead, so contactable companies outrank uncontactable ones.
+                ORDER BY ((CASE WHEN phone IS NOT NULL AND phone <> '' THEN 2 ELSE 0 END)
+                        + (CASE WHEN website IS NOT NULL AND website <> '' THEN 1 ELSE 0 END)) DESC,
+                         rating DESC NULLS LAST, reviews_count DESC NULLS LAST
                 LIMIT %(lim)s
             """
             cur.execute(sql, params)
