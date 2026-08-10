@@ -38,7 +38,17 @@ TAXONOMY = {
     "многоэтажн":    [r"многоэтажн"],
 }
 
+# Some names contain a tag's keyword while describing a different business:
+# "каркасно-тентовые сооружения" contains "каркас" but the company makes
+# canopies, not houses. This mis-tagged half of the каркасные_дома category.
+# A tag is withheld when any of its negative patterns matches.
+NEGATIVE = {
+    "каркас": [r"тент", r"навес", r"шат[её]р", r"бассейн", r"купол",
+               r"\btent\b", r"торгов\w*\s+оборудован", r"спортивн\w*\s+оборудован"],
+}
+
 COMPILED = {tag: [re.compile(p, re.IGNORECASE) for p in patterns] for tag, patterns in TAXONOMY.items()}
+NEG_COMPILED = {tag: [re.compile(p, re.IGNORECASE) for p in patterns] for tag, patterns in NEGATIVE.items()}
 
 def classify(name: str, description: str) -> list[str]:
     text = f"{name or ''} {description or ''}"
@@ -47,6 +57,8 @@ def classify(name: str, description: str) -> list[str]:
     tags = []
     for tag, patterns in COMPILED.items():
         if any(p.search(text) for p in patterns):
+            if any(n.search(text) for n in NEG_COMPILED.get(tag, ())):
+                continue
             tags.append(tag)
     return tags
 
