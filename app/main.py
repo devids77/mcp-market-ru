@@ -286,17 +286,50 @@ def execute_db(sql: str, params: dict = None) -> Optional[dict]:
         conn.close()
 
 
+def _caller_identity():
+    """Who is calling this tool: (client_info, ip).
+
+    agent_queries has carried client_info and ip_address since March and both
+    were never written, so 2 243 recorded tool calls cannot be attributed —
+    there is no way to tell a real agent from a liveness crawler, which is
+    exactly the question this project needs answered. Fill them in.
+    """
+    try:
+        from fastmcp.server.dependencies import get_http_request
+        req = get_http_request()
+        if req is None:
+            return "", ""
+        ua = (req.headers.get("user-agent") or "")[:200]
+        raw_ip = (req.headers.get("x-real-ip")
+                  or (req.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+                  or (req.client.host if req.client else ""))
+        # agent_queries.ip_address is inet: a non-IP value would abort the whole
+        # INSERT and we would silently lose the log row we are trying to add.
+        import ipaddress as _ipa
+        try:
+            ip = str(_ipa.ip_address(raw_ip.strip()))
+        except ValueError:
+            ip = ""
+        return ua, ip
+    except Exception:
+        return "", ""
+
+
 def log_query(tool_name: str, params: dict, results_count: int, duration_ms: int):
     """Log agent query for analytics."""
     try:
+        client_info, ip = _caller_identity()
         execute_db(
-            """INSERT INTO agent_queries (tool_name, params, results_count, duration_ms) 
-               VALUES (%(tool)s, %(params)s, %(count)s, %(dur)s)""",
+            """INSERT INTO agent_queries (tool_name, params, results_count, duration_ms,
+                                          client_info, ip_address)
+               VALUES (%(tool)s, %(params)s, %(count)s, %(dur)s, %(client)s, %(ip)s)""",
             {
                 "tool": tool_name,
                 "params": json.dumps(params, ensure_ascii=False, default=str),
                 "count": results_count,
                 "dur": duration_ms,
+                "client": client_info or None,
+                "ip": ip or None,
             },
         )
     except Exception:
