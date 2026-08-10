@@ -327,7 +327,7 @@ def search_companies(
         limit: Number of results to return, maximum 20
     """
     start = time.time()
-    limit = min(limit, 20)
+    limit = max(1, min(int(limit), 20))
     
     conditions = ["1=1"]
     params = {}
@@ -428,7 +428,7 @@ def search_projects(
         limit: Number of results to return, maximum 20
     """
     start = time.time()
-    limit = min(limit, 20)
+    limit = max(1, min(int(limit), 20))
     
     conditions = ["1=1"]
     params = {}
@@ -474,8 +474,11 @@ def search_projects(
         FROM projects p
         JOIN companies c ON p.company_id = c.id
         WHERE {where}
-        ORDER BY p.price ASC NULLS LAST, p.area ASC
-        LIMIT {limit}
+          AND COALESCE(p.url, '') NOT ILIKE '%%restate%%'
+          AND COALESCE(p.url, '') NOT ILIKE '%%snyat%%'
+          AND COALESCE(p.source_url, '') NOT ILIKE '%%snyat%%'
+        ORDER BY c.rating DESC NULLS LAST, p.price DESC NULLS LAST
+        LIMIT {max(1, min(int(limit), 50))}
     """
     
     rows = query_db(sql, params, limit)
@@ -487,7 +490,7 @@ def search_projects(
     
     results = []
     for r in rows:
-        project = f"**{r.get('name', 'Без названия')}**"
+        project = f"**{(r.get('name') or 'Без названия').strip() or 'Без названия'}**"
         project += f" — {r['company_name']}"
         if r.get("city"):
             project += f" ({r['city']})"
@@ -1202,7 +1205,7 @@ def market_analytics(region: str = "", category: str = "") -> str:
                 where.append("region ILIKE %s")
                 params.append(f"%{region}%")
             if category:
-                where.append("(category ILIKE %s OR subcategories ILIKE %s)")
+                where.append("(category ILIKE %s OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %s))")
                 params.extend([f"%{category}%", f"%{category}%"])
             where_sql = "WHERE " + " AND ".join(where) if where else ""
             
@@ -1301,7 +1304,7 @@ def find_best_companies(
                 where.append("region ILIKE %s")
                 params.append(f"%{region}%")
             if category:
-                where.append("(category ILIKE %s OR subcategories ILIKE %s)")
+                where.append("(category ILIKE %s OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %s))")
                 params.extend([f"%{category}%", f"%{category}%"])
             if min_rating > 0:
                 where.append("rating >= %s")
@@ -1374,7 +1377,7 @@ def price_comparison(regions: str = "", category: str = "") -> str:
                 where.append(f"region IN ({placeholders})")
                 params.extend(region_list)
             if category:
-                where.append("(category ILIKE %s OR subcategories ILIKE %s)")
+                where.append("(category ILIKE %s OR EXISTS (SELECT 1 FROM unnest(subcategories) _sc WHERE _sc ILIKE %s))")
                 params.extend([f"%{category}%", f"%{category}%"])
             
             where_sql = "WHERE " + " AND ".join(where)
@@ -1451,9 +1454,9 @@ def company_portfolio(company_slug: str) -> str:
             # Get all projects
             cur.execute("""
                 SELECT name, description, area, floors, material, price_per_sqm,
-                    total_price, image_url, source_url
+                    price, images, source_url
                 FROM projects WHERE company_id = %s
-                ORDER BY total_price DESC NULLS LAST
+                ORDER BY price DESC NULLS LAST
             """, (company["id"],))
             projects = [dict(p) for p in cur.fetchall()]
             
@@ -2113,6 +2116,7 @@ def region_comparison(regions: str, category: str = "") -> str:
                     count(DISTINCT category) as categories_count
                 FROM companies
                 WHERE region ILIKE %s {cat_filter}
+                GROUP BY region
             """, params)
             
             data = cur.fetchone()
@@ -4440,9 +4444,8 @@ def get_lead_status(lead_id: str, api_key: str) -> str:
                 return _json.dumps({"error": "Invalid or inactive api_key"})
 
             cur.execute("""
-                SELECT l.id, l.status, l.client_name, l.client_phone, l.client_email,
-                       l.project_description, l.budget_from, l.budget_to, l.region,
-                       l.category, l.created_at, l.sent_to_crm_at, l.crm_lead_id,
+                SELECT l.id, l.status, l.name, l.phone, l.email, l.comment,
+                       l.created_at, l.sent_to_crm_at,
                        c.name AS company_name
                 FROM leads l
                 LEFT JOIN companies c ON c.id = l.company_id
@@ -4451,8 +4454,13 @@ def get_lead_status(lead_id: str, api_key: str) -> str:
             row = cur.fetchone()
             if not row:
                 return _json.dumps({"error": f"Lead {lead_id} not found"})
-
-            return _json.dumps(dict(row), ensure_ascii=False, default=str)
+            d = dict(row)
+            def _mask(v):
+                v = v or ""
+                return (v[:2] + "***" + v[-2:]) if len(v) > 4 else ("***" if v else "")
+            d["phone"] = _mask(d.get("phone"))
+            d["email"] = _mask(d.get("email"))
+            return _json.dumps(d, ensure_ascii=False, default=str)
     finally:
         conn.close()
 
