@@ -4464,7 +4464,7 @@ def _region_pattern(region: str) -> str:
     if r in _REGION_ALIASES:
         return _REGION_ALIASES[r]
     stem = _re.sub(r"[аяьеёи]$", "", r) or r
-    return _re.sub(r"([.^$*+?()\[\]{}|\])", r"\", stem)
+    return _re.escape(stem)
 
 
 @mcp.tool()
