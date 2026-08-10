@@ -4235,17 +4235,28 @@ def export_search_csv(
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             params = {}
             conditions = ["1=1"]
+            # Projects have no category/region/city of their own - those belong
+            # to the owning company, so the projects export joins companies.
+            is_projects = entity == "projects"
+            c_name = "p.name" if is_projects else "name"
+            c_desc = "p.description" if is_projects else "description"
+            c_cat = "c.category" if is_projects else "category"
+            c_reg = "c.region" if is_projects else "region"
+            c_city = "c.city" if is_projects else "city"
             if query:
-                conditions.append("(name ILIKE %(query)s OR description ILIKE %(query)s)")
+                conditions.append(f"({c_name} ILIKE %(query)s OR {c_desc} ILIKE %(query)s)")
                 params["query"] = f"%{query}%"
             if category:
-                conditions.append("(category = %(category)s)")
+                conditions.append(f"({c_cat} = %(category)s)")
                 params["category"] = category
             if region:
-                conditions.append("(region ILIKE %(region)s OR city ILIKE %(region)s)")
+                conditions.append(f"({c_reg} ILIKE %(region)s OR {c_city} ILIKE %(region)s)")
                 params["region"] = f"%{region}%"
-            if budget_max > 0 and entity == "companies":
-                conditions.append("(min_project_price <= %(budget)s OR min_project_price IS NULL)")
+            if budget_max > 0:
+                if is_projects:
+                    conditions.append("(p.price <= %(budget)s OR p.price IS NULL)")
+                else:
+                    conditions.append("(min_project_price <= %(budget)s OR min_project_price IS NULL)")
                 params["budget"] = budget_max
 
             where = " AND ".join(conditions)
@@ -4259,11 +4270,21 @@ def export_search_csv(
                 sql = f"SELECT {', '.join(cols)} FROM companies WHERE {where} ORDER BY rating DESC NULLS LAST LIMIT %(lim)s"
             else:
                 cols = ["id", "name", "category", "region", "city",
-                        "price_total", "area_sqm", "floors", "description"]
-                sql = f"SELECT {', '.join(cols)} FROM projects WHERE {where} ORDER BY created_at DESC NULLS LAST LIMIT %(lim)s"
+                        "price", "price_per_sqm", "area", "floors",
+                        "material", "description"]
+                select_list = ("p.id, p.name, c.category, c.region, c.city, "
+                               "p.price, p.price_per_sqm, p.area, p.floors, "
+                               "p.material, p.description")
+                sql = (f"SELECT {select_list} FROM projects p "
+                       f"JOIN companies c ON p.company_id = c.id "
+                       f"WHERE {where} ORDER BY p.price DESC NULLS LAST LIMIT %(lim)s")
 
-            cur.execute(sql, params)
-            rows = cur.fetchall()
+            try:
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+            except Exception:
+                conn.rollback()
+                return "ERROR: export failed for the requested filters"
 
             buf = _io.StringIO()
             w = _csv.writer(buf, quoting=_csv.QUOTE_MINIMAL)
