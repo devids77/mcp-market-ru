@@ -118,7 +118,11 @@ def main():
     print(f"\n{'#'*60}\n# MCP Market — Полный парсинг\n# {start:%Y-%m-%d %H:%M:%S}\n{'#'*60}")
     conn=get_db()
     nc=parse_cos(conn)
-    np=gen_projects(conn)
+    # gen_projects() invented ~7 projects per company from a hardcoded price
+    # table and attributed them to real contractors as if they were offers.
+    # 15 854 such rows are now marked source='generated' and hidden from the
+    # catalogue; do not create more. Kept below for reference only.
+    np=0
     with conn.cursor() as cur:
         cur.execute("SELECT COUNT(*) FROM companies");tc=cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM projects");tp=cur.fetchone()[0]

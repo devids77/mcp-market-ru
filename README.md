@@ -101,10 +101,10 @@ The server supports both Russian and English queries with proper synonym handlin
 
 | Plan | Price | Requests/day | Tools |
 |------|-------|--------------|-------|
-| Free | ₽0 | 100 | 21 (all Free-tier tools) |
-| Starter | ₽2 990/mo | 1 000 | 21 + Analytics |
-| Pro | ₽7 990/mo | 5 000 | 21 + Analytics + AI Tools |
-| Enterprise | ₽24 990/mo | unlimited | 21 + custom, SLA, white-label |
+| Free | ₽0 | 100 | 24 (all Free-tier tools) |
+| Starter | ₽2 990/mo | 1 000 | 24 + Analytics |
+| Pro | ₽7 990/mo | 5 000 | 24 + Analytics + AI Tools |
+| Enterprise | ₽24 990/mo | unlimited | 24 + custom, SLA, white-label |
 
 Get a key at [https://mcp-market.ru/pricing](https://mcp-market.ru/pricing).
 
