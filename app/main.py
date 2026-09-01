@@ -2401,98 +2401,211 @@ async def root():
 # === SEO: Company profile page ===
 @app.get("/company/{company_id}")
 def company_profile(company_id: str):
+    """Public company page.
+
+    One of ~3 400 landing pages and the only surface Yandex/Google can rank, so
+    it has to carry real content: the previous version rendered ~300 characters
+    and no internal links, which reads as a doorway page.
+    """
     from fastapi.responses import HTMLResponse
+    import json as _json
     import uuid as _uuid
     try:
         _uuid.UUID(str(company_id))
     except (ValueError, AttributeError, TypeError):
-        return HTMLResponse("<h1>Company not found</h1>", status_code=404)
+        return HTMLResponse("<h1>Компания не найдена</h1>", status_code=404)
     try:
         conn = get_db()
         cur = conn.cursor()
         cur.execute("SELECT * FROM companies WHERE id=%s", (company_id,))
-        cols = [desc[0] for desc in cur.description]
+        cols = [d[0] for d in cur.description]
         r = cur.fetchone()
-        cur.close()
-        conn.close()
         if not r:
-            return HTMLResponse("<h1>Company not found</h1>", status_code=404)
+            cur.close(); conn.close()
+            return HTMLResponse("<h1>Компания не найдена</h1>", status_code=404)
         row = dict(zip(cols, r))
+        cur.execute(
+            """SELECT name, area, floors, bedrooms, material, price, url, source_url
+               FROM projects
+               WHERE company_id = %s AND COALESCE(source, '') <> 'generated'
+               ORDER BY area DESC NULLS LAST LIMIT 24""",
+            (company_id,))
+        pcols = [d[0] for d in cur.description]
+        projects = [dict(zip(pcols, x)) for x in cur.fetchall()]
+        cur.execute(
+            """SELECT id, name, city, rating FROM companies
+               WHERE region = %s AND category = %s AND id <> %s
+               ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST LIMIT 8""",
+            (row.get("region") or "", row.get("category") or "", company_id))
+        related = [{"id": x[0], "name": x[1], "city": x[2], "rating": x[3]} for x in cur.fetchall()]
+        cur.close(); conn.close()
     except Exception:
-        return HTMLResponse("<h1>Error</h1><p>Не удалось загрузить страницу компании.</p>", status_code=500)
-    if not row:
-        return HTMLResponse("<h1>Company not found</h1>", status_code=404)
-    n = html.escape(row["name"] or "")
-    city = html.escape(row.get("city","") or "")
-    cat = html.escape(row.get("category","") or "")
-    desc = html.escape((row.get("description","") or "")[:500])
-    rating = row.get("rating","") or ""
-    phone = html.escape(row.get("phone","") or "")
-    web = html.escape(row.get("website","") or "")
-    rc = row.get("reviews_count",0) or 0
-    import json as _json
-    _curl = f"https://mcp-market.ru/company/{company_id}"
-    _ld = {
-        "@context": "https://schema.org",
-        "@type": "HomeAndConstructionBusiness",
-        "@id": _curl + "#business",
-        "name": row.get("name") or "",
-        "url": _curl,
-    }
-    if row.get("city"):
-        _ld["address"] = {"@type": "PostalAddress",
-                          "addressLocality": row.get("city"), "addressCountry": "RU"}
-    if row.get("category"):
-        _ld["knowsAbout"] = row.get("category")
-    if row.get("phone"):
-        _ld["telephone"] = row.get("phone")
-    if row.get("website"):
-        _ld["sameAs"] = row.get("website")
-    if row.get("description"):
-        _ld["description"] = (row.get("description") or "")[:300]
+        return HTMLResponse("<h1>Ошибка</h1><p>Не удалось загрузить страницу компании.</p>",
+                            status_code=500)
+
+    e = html.escape
+    n = e(row["name"] or "")
+    city = e(row.get("city") or "")
+    region = e(row.get("region") or "")
+    cat = e(row.get("category") or "")
+    cat_h = cat.replace("_", " ")
+    desc = e((row.get("description") or "")[:600])
+    rating = row.get("rating") or ""
+    phone = e(row.get("phone") or "")
+    web = e(row.get("website") or "")
+    rc = int(row.get("reviews_count") or 0)
+    ppmin, ppmax = row.get("price_per_sqm_min"), row.get("price_per_sqm_max")
+    tags = [e(str(t)) for t in (row.get("tags") or []) if t][:10]
+    subs = [e(str(t)) for t in (row.get("subcategories") or []) if t][:8]
+
+    def money(v):
+        try:
+            return "{:,.0f}".format(float(v)).replace(",", " ")
+        except (TypeError, ValueError):
+            return ""
+
+    def plural(k, one, few, many):
+        k = abs(int(k)) % 100
+        if 11 <= k <= 14:
+            return many
+        k %= 10
+        return one if k == 1 else few if 2 <= k <= 4 else many
+
+    facts = [f"<strong>{n}</strong> — {cat_h}" + (f", {city}" if city else "")
+             + (f" ({region})" if region and region != city else "") + "."]
+    if projects:
+        word = plural(len(projects), "проект", "проекта", "проектов")
+        areas = [float(p["area"]) for p in projects if p.get("area")]
+        if areas:
+            facts.append(f"В каталоге {len(projects)} {word} — "
+                         f"площадь от {min(areas):.0f} до {max(areas):.0f} м².")
+        else:
+            facts.append(f"В каталоге {len(projects)} {word}.")
     try:
-        _rv = float(rating)
+        _pp = float(ppmin) if ppmin else 0.0
     except (TypeError, ValueError):
-        _rv = 0.0
-    if _rv > 0 and rc and int(rc) > 0:
-        _ld["aggregateRating"] = {"@type": "AggregateRating",
-                                  "ratingValue": round(_rv, 1),
-                                  "reviewCount": int(rc), "bestRating": 5}
-    _ldjson = _json.dumps(_ld, ensure_ascii=False).replace("<", "\\u003c")
-    _ogt = html.escape((row.get("name") or "") + " — MCP Market Russia")
-    seo_extra = (
-        '<meta name="robots" content="index, follow, max-image-preview:large">'
-        '<meta property="og:type" content="website">'
-        '<meta property="og:site_name" content="MCP Market">'
-        '<meta property="og:locale" content="ru_RU">'
-        f'<meta property="og:title" content="{_ogt}">'
-        f'<meta property="og:description" content="{desc[:200]}">'
-        f'<meta property="og:url" content="{_curl}">'
-        '<script type="application/ld+json">' + _ldjson + '</script>'
-    )
+        _pp = 0.0
+    if 3000 <= _pp <= 500000:
+        rng = money(ppmin) + (f"–{money(ppmax)}" if ppmax and ppmax != ppmin else "")
+        facts.append(f"Заявленная стоимость — {rng} ₽ за м².")
+    if rating and rc:
+        facts.append(f"Рейтинг {rating} из 5 по {rc} "
+                     f"{plural(rc, 'отзыву', 'отзывам', 'отзывам')}.")
+    intro = " ".join(facts)
+
+    rows_html = ""
+    for p in projects:
+        rows_html += ("<tr><td>" + e(str(p.get("name") or "Проект")[:90]) + "</td>"
+                      + "<td>" + (f"{float(p['area']):.0f} м²" if p.get("area") else "—") + "</td>"
+                      + "<td>" + (str(int(p["floors"])) if p.get("floors") else "—") + "</td>"
+                      + "<td>" + e(str(p.get("material") or "—")) + "</td>"
+                      + "<td>" + (money(p["price"]) + " ₽" if p.get("price") else "—") + "</td></tr>")
+    projects_html = ""
+    if rows_html:
+        projects_html = ("<h2>Проекты домов</h2><table><thead><tr><th>Проект</th>"
+                         "<th>Площадь</th><th>Этажей</th><th>Материал</th><th>Цена</th>"
+                         "</tr></thead><tbody>" + rows_html + "</tbody></table>")
+
+    related_html = ""
+    if related:
+        items = "".join(
+            f'<li><a href="/company/{x["id"]}">{e(x["name"] or "")}</a>'
+            + (f' — {e(x["city"] or "")}' if x.get("city") else "")
+            + (f' · {x["rating"]}★' if x.get("rating") else "") + "</li>"
+            for x in related)
+        related_html = (f"<h2>Другие компании: {cat_h}"
+                        + (f", {region}" if region else "") + f"</h2><ul>{items}</ul>")
+
+    seen, chip_list = set(), []
+    for t in [cat_h] + subs + tags:
+        t = (t or "").replace("_", " ").strip()
+        if t and t.lower() not in seen:
+            seen.add(t.lower())
+            chip_list.append(t)
+    chips = "".join(f'<span class="badge">{t}</span>' for t in chip_list)
+
+    curl_ = f"https://mcp-market.ru/company/{company_id}"
+    ld = {"@context": "https://schema.org", "@type": "HomeAndConstructionBusiness",
+          "@id": curl_ + "#business", "name": row.get("name") or "", "url": curl_}
+    if row.get("city"):
+        ld["address"] = {"@type": "PostalAddress", "addressLocality": row.get("city"),
+                         "addressRegion": row.get("region") or "", "addressCountry": "RU"}
+    if row.get("region"):
+        ld["areaServed"] = row.get("region")
+    if row.get("category"):
+        ld["knowsAbout"] = (row.get("category") or "").replace("_", " ")
+    if row.get("phone"):
+        ld["telephone"] = row.get("phone")
+    if row.get("website"):
+        ld["sameAs"] = row.get("website")
+    ld["description"] = (row.get("description") or intro)[:300]
+    try:
+        rv = float(rating)
+    except (TypeError, ValueError):
+        rv = 0.0
+    if rv > 0 and rc > 0:
+        ld["aggregateRating"] = {"@type": "AggregateRating", "ratingValue": round(rv, 1),
+                                 "reviewCount": rc, "bestRating": 5}
+    if projects:
+        ld["makesOffer"] = [
+            {"@type": "Offer", "itemOffered": {"@type": "Product",
+                                               "name": str(p.get("name") or "Проект дома")[:90]},
+             **({"price": str(int(float(p["price"]))), "priceCurrency": "RUB"} if p.get("price") else {})}
+            for p in projects[:10]]
+    crumbs = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "MCP Market Russia",
+         "item": "https://mcp-market.ru/"},
+        {"@type": "ListItem", "position": 2, "name": row.get("name") or "", "item": curl_}]}
+    ldjson = _json.dumps(ld, ensure_ascii=False).replace("<", "\\u003c")
+    crumbjson = _json.dumps(crumbs, ensure_ascii=False).replace("<", "\\u003c")
+
+    meta_desc = e(f"{row.get('name') or ''} — {cat_h}"
+                  + (f", {row.get('city')}" if row.get("city") else "")
+                  + ". " + (row.get("description") or "")[:120]
+                  + (f" {len(projects)} проектов домов." if projects else ""))[:300]
+    ogt = e((row.get("name") or "") + " — " + cat_h + (f", {row.get('city')}" if row.get("city") else ""))
+
     page_html = f"""<!DOCTYPE html>
 <html lang="ru"><head>
 <meta charset="utf-8">
-<title>{n} — MCP Market Russia</title>
-<meta name="description" content="{n}, {cat}, {city}. {desc[:160]}">
-{seo_extra}
+<title>{n} — {cat_h}{', ' + city if city else ''} | MCP Market Russia</title>
+<meta name="description" content="{meta_desc}">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="canonical" href="https://mcp-market.ru/company/{html.escape(company_id)}">
-<style>body{{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;color:#333}}
-h1{{color:#1a56db}}a{{color:#1a56db}}.meta{{color:#666;margin:4px 0}}.desc{{margin:16px 0;line-height:1.6}}
-.badge{{background:#e8f0fe;color:#1a56db;padding:4px 12px;border-radius:12px;font-size:14px;display:inline-block;margin:2px}}
-footer{{margin-top:40px;padding-top:20px;border-top:1px solid #eee;color:#999;font-size:13px}}</style>
+<link rel="canonical" href="{curl_}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MCP Market">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="{ogt}">
+<meta property="og:description" content="{meta_desc[:200]}">
+<meta property="og:url" content="{curl_}">
+<script type="application/ld+json">{ldjson}</script>
+<script type="application/ld+json">{crumbjson}</script>
+<style>body{{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:840px;margin:0 auto;padding:24px 20px 60px;color:#222;line-height:1.55}}
+h1{{color:#1a56db;margin:8px 0 4px;font-size:28px}}h2{{margin-top:32px;font-size:20px;color:#111}}
+a{{color:#1a56db}}nav{{font-size:14px;color:#888;margin-bottom:8px}}
+.badge{{background:#eef3ff;color:#1a56db;padding:3px 10px;border-radius:12px;font-size:13px;display:inline-block;margin:2px 4px 2px 0}}
+.intro{{margin:14px 0;font-size:17px}}
+table{{border-collapse:collapse;width:100%;margin-top:10px;font-size:14px}}
+th,td{{text-align:left;padding:7px 10px;border-bottom:1px solid #eee}}th{{background:#fafbff;color:#555}}
+ul{{padding-left:20px}}li{{margin:4px 0}}
+.cta{{margin-top:28px;padding:16px;background:#f6f9ff;border:1px solid #dbe6ff;border-radius:10px}}
+footer{{margin-top:44px;padding-top:16px;border-top:1px solid #eee;color:#999;font-size:13px}}</style>
 </head><body>
-<p><a href="/">&larr; MCP Market Russia</a></p>
+<nav><a href="/">MCP Market Russia</a> / {cat_h}{' / ' + region if region else ''}</nav>
 <h1>{n}</h1>
-<p class="meta"><span class="badge">{cat}</span> <span class="badge">{city}</span></p>
-{"<p>&#11088; "+str(rating)+"/5 ("+str(rc)+" reviews)</p>" if rating else ""}
-<div class="desc">{desc}</div>
-{"<p>&#128222; "+phone+"</p>" if phone else ""}
-{"<p>&#127760; <a href=\'"+web+"\'  rel=\'noopener\'>"+web+"</a></p>" if web else ""}
-<hr>
-<p style="margin-top:20px"><a href="https://mcp-market.ru/mcp/">Connect via MCP protocol</a> to get full data on {n}.</p>
-<footer>&copy; 2026 MCP Market Russia &mdash; mcp-market.ru</footer>
+<p>{chips}</p>
+<p class="intro">{intro}</p>
+{'<p>' + desc + '</p>' if desc else ''}
+{'<p>📞 ' + phone + '</p>' if phone else ''}
+{'<p>🌐 <a href="' + web + '" rel="nofollow noopener" target="_blank">' + web + '</a></p>' if web else ''}
+{projects_html}
+{related_html}
+<div class="cta">
+<p><strong>Нужен расчёт от этой компании?</strong> Оставьте заявку — передадим её оператору MCP Market.</p>
+<p><a href="/demo">Подобрать подрядчика</a> · <a href="/quickstart">Подключить каталог к AI-агенту</a></p>
+</div>
+<footer>&copy; 2026 MCP Market Russia — каталог строительных компаний России. Данные собраны из открытых источников и не проходили независимую проверку.</footer>
 </body></html>"""
     return HTMLResponse(content=page_html)
 
@@ -4706,3 +4819,250 @@ async def docs_redirect():
     return await quickstart_page()
 
 # QUICKSTART_INLINE_FIXED
+
+
+# ─── Catalog landing pages ──────────────────────────────────────────────────
+# Nobody searches "MCP Market"; they search "каркасные дома московская область".
+# The site had no category or region pages at all, so those queries had nothing
+# to land on. These three routes give every (category, region) pair a real page.
+
+_TRANSLIT = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
+    "ж": "zh", "з": "z", "и": "i", "й": "y", "к": "k", "л": "l", "м": "m",
+    "н": "n", "о": "o", "п": "p", "р": "r", "с": "s", "т": "t", "у": "u",
+    "ф": "f", "х": "h", "ц": "c", "ч": "ch", "ш": "sh", "щ": "sch", "ъ": "",
+    "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
+}
+
+
+def _slugify(value: str) -> str:
+    import re as _re
+    s = "".join(_TRANSLIT.get(ch, ch) for ch in (value or "").strip().lower())
+    s = _re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+    return s or "n-a"
+
+
+def _plural(k, one, few, many):
+    """Russian number agreement: 1 компания, 2 компании, 5 компаний."""
+    k = abs(int(k)) % 100
+    if 11 <= k <= 14:
+        return many
+    k %= 10
+    return one if k == 1 else few if 2 <= k <= 4 else many
+
+
+_CATALOG_CACHE = {"at": 0.0, "cats": [], "regions": []}
+
+
+def _catalog_index():
+    """(categories, regions) as [(slug, value, count)], refreshed every 10 min."""
+    now = time.time()
+    if _CATALOG_CACHE["at"] and now - _CATALOG_CACHE["at"] < 600:
+        return _CATALOG_CACHE["cats"], _CATALOG_CACHE["regions"]
+    cats, regions = [], []
+    try:
+        conn = get_db()
+        with conn.cursor() as cur:
+            cur.execute("SELECT category, COUNT(*) FROM companies "
+                        "WHERE category IS NOT NULL AND category <> '' "
+                        "GROUP BY category ORDER BY 2 DESC")
+            cats = [(_slugify(c), c, int(n)) for c, n in cur.fetchall()]
+            cur.execute("SELECT region, COUNT(*) FROM companies "
+                        "WHERE region IS NOT NULL AND region <> '' "
+                        "GROUP BY region ORDER BY 2 DESC")
+            regions = [(_slugify(c), c, int(n)) for c, n in cur.fetchall()]
+        conn.close()
+        _CATALOG_CACHE.update({"at": now, "cats": cats, "regions": regions})
+    except Exception:
+        pass
+    return cats, regions
+
+
+def _cat_shell(title, meta_desc, canonical, crumbs, body_html):
+    import json as _json
+    e = html.escape
+    crumb_ld = _json.dumps({
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": nm, "item": u}
+                            for i, (nm, u) in enumerate(crumbs)],
+    }, ensure_ascii=False).replace("<", "\\u003c")
+    nav = " / ".join(f'<a href="{u}">{e(nm)}</a>' for nm, u in crumbs[:-1])
+    return f"""<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<title>{e(title)}</title>
+<meta name="description" content="{e(meta_desc)[:300]}">
+<meta name="robots" content="index, follow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="canonical" href="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MCP Market">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(meta_desc)[:200]}">
+<meta property="og:url" content="{canonical}">
+<script type="application/ld+json">{crumb_ld}</script>
+<style>body{{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:900px;margin:0 auto;padding:24px 20px 60px;color:#222;line-height:1.55}}
+h1{{color:#1a56db;font-size:28px;margin:8px 0 6px}}h2{{font-size:20px;margin-top:30px}}
+a{{color:#1a56db}}nav{{font-size:14px;color:#888;margin-bottom:8px}}
+.grid{{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}}
+.chip{{background:#eef3ff;color:#1a56db;padding:5px 12px;border-radius:14px;font-size:14px;text-decoration:none}}
+table{{border-collapse:collapse;width:100%;margin-top:12px;font-size:14px}}
+th,td{{text-align:left;padding:8px 10px;border-bottom:1px solid #eee}}th{{background:#fafbff;color:#555}}
+.intro{{font-size:17px;margin:12px 0}}
+footer{{margin-top:44px;padding-top:16px;border-top:1px solid #eee;color:#999;font-size:13px}}</style>
+</head><body>
+<nav>{nav}</nav>
+{body_html}
+<footer>&copy; 2026 MCP Market Russia — каталог строительных компаний России.
+Данные собраны из открытых источников и не проходили независимую проверку.</footer>
+</body></html>"""
+
+
+@app.get("/catalog")
+def catalog_index():
+    from fastapi.responses import HTMLResponse
+    e = html.escape
+    cats, regions = _catalog_index()
+    if not cats:
+        return HTMLResponse("<h1>Каталог временно недоступен</h1>", status_code=503)
+    total = sum(n for _, _, n in cats)
+    cat_html = "".join(f'<a class="chip" href="/catalog/{s}">{e(v.replace("_", " "))} · {n}</a>'
+                       for s, v, n in cats)
+    reg_html = "".join(f'<a class="chip" href="/catalog/{cats[0][0]}/{s}">{e(v)} · {n}</a>'
+                       for s, v, n in regions[:30])
+    body = (f"<h1>Каталог строительных компаний России</h1>"
+            f'<p class="intro">{total} {_plural(total, "компания", "компании", "компаний")} '
+            f"в {len(cats)} категориях и {len(regions)} регионах. Рейтинги, проекты домов, "
+            f"цены за м² и контакты — в одном каталоге.</p>"
+            f'<h2>Категории</h2><div class="grid">{cat_html}</div>'
+            f'<h2>Регионы</h2><div class="grid">{reg_html}</div>')
+    return HTMLResponse(_cat_shell(
+        "Каталог строительных компаний России — MCP Market",
+        f"Каталог из {total} строительных компаний России: {len(cats)} категорий, "
+        f"{len(regions)} регионов, рейтинги и проекты домов.",
+        "https://mcp-market.ru/catalog",
+        [("MCP Market Russia", "/"), ("Каталог", "/catalog")], body))
+
+
+@app.get("/catalog/{cat_slug}")
+def catalog_category(cat_slug: str):
+    from fastapi.responses import HTMLResponse
+    e = html.escape
+    cats, _ = _catalog_index()
+    match = next((c for c in cats if c[0] == cat_slug), None)
+    if not match:
+        return HTMLResponse("<h1>Категория не найдена</h1>"
+                            '<p><a href="/catalog">Все категории</a></p>', status_code=404)
+    _, cat_value, cat_count = match
+    cat_h = e(cat_value.replace("_", " "))
+    try:
+        conn = get_db()
+        with conn.cursor() as cur:
+            cur.execute("SELECT region, COUNT(*) FROM companies WHERE category = %s "
+                        "AND region IS NOT NULL AND region <> '' "
+                        "GROUP BY region ORDER BY 2 DESC", (cat_value,))
+            by_region = cur.fetchall()
+            cur.execute("SELECT id, name, city, region, rating, reviews_count FROM companies "
+                        "WHERE category = %s ORDER BY rating DESC NULLS LAST, "
+                        "reviews_count DESC NULLS LAST LIMIT 40", (cat_value,))
+            top = cur.fetchall()
+        conn.close()
+    except Exception:
+        return HTMLResponse("<h1>Ошибка</h1>", status_code=500)
+    reg_html = "".join(f'<a class="chip" href="/catalog/{cat_slug}/{_slugify(rg)}">{e(rg)} · {n}</a>'
+                       for rg, n in by_region)
+    rows = "".join(f'<tr><td><a href="/company/{i}">{e(nm or "")}</a></td><td>{e(ct or "")}</td>'
+                   f'<td>{e(rg or "")}</td><td>{rt if rt else "—"}</td><td>{rc or 0}</td></tr>'
+                   for i, nm, ct, rg, rt, rc in top)
+    body = (f"<h1>{cat_h} — компании по всей России</h1>"
+            f'<p class="intro">В категории «{cat_h}» {cat_count} '
+            f'{_plural(cat_count, "компания", "компании", "компаний")} '
+            f"в {len(by_region)} регионах. Ниже — регионы и компании с самым высоким рейтингом.</p>"
+            f'<h2>Регионы</h2><div class="grid">{reg_html}</div>'
+            f"<h2>Компании с высоким рейтингом</h2>"
+            f"<table><thead><tr><th>Компания</th><th>Город</th><th>Регион</th>"
+            f"<th>Рейтинг</th><th>Отзывов</th></tr></thead><tbody>{rows}</tbody></table>")
+    return HTMLResponse(_cat_shell(
+        f"{cat_value.replace('_', ' ').capitalize()} — {cat_count} "
+        f"{_plural(cat_count, 'компания', 'компании', 'компаний')} | MCP Market",
+        f"{cat_count} {_plural(cat_count, 'компания', 'компании', 'компаний')} категории "
+        f"«{cat_value.replace('_', ' ')}» в {len(by_region)} регионах России.",
+        f"https://mcp-market.ru/catalog/{cat_slug}",
+        [("MCP Market Russia", "/"), ("Каталог", "/catalog"),
+         (cat_value.replace("_", " "), f"/catalog/{cat_slug}")], body))
+
+
+@app.get("/catalog/{cat_slug}/{region_slug}")
+def catalog_category_region(cat_slug: str, region_slug: str):
+    from fastapi.responses import HTMLResponse
+    import json as _json
+    e = html.escape
+    cats, regions = _catalog_index()
+    cm = next((c for c in cats if c[0] == cat_slug), None)
+    rm = next((r for r in regions if r[0] == region_slug), None)
+    if not cm or not rm:
+        return HTMLResponse("<h1>Страница не найдена</h1>"
+                            '<p><a href="/catalog">Все категории</a></p>', status_code=404)
+    cat_value, region_value = cm[1], rm[1]
+    cat_h = e(cat_value.replace("_", " "))
+    try:
+        conn = get_db()
+        with conn.cursor() as cur:
+            cur.execute("""SELECT id, name, city, rating, reviews_count,
+                                  price_per_sqm_min, price_per_sqm_max, projects_count
+                           FROM companies WHERE category = %s AND region = %s
+                           ORDER BY rating DESC NULLS LAST, reviews_count DESC NULLS LAST
+                           LIMIT 60""", (cat_value, region_value))
+            comps = cur.fetchall()
+        conn.close()
+    except Exception:
+        return HTMLResponse("<h1>Ошибка</h1>", status_code=500)
+    if not comps:
+        return HTMLResponse(f"<h1>{cat_h} — {e(region_value)}</h1>"
+                            "<p>В этом регионе пока нет компаний этой категории.</p>"
+                            f'<p><a href="/catalog/{cat_slug}">Все регионы категории</a></p>',
+                            status_code=404)
+
+    def money(v):
+        try:
+            return "{:,.0f}".format(float(v)).replace(",", " ")
+        except (TypeError, ValueError):
+            return ""
+
+    # Only prices that are plausible as RUB/m2 — the column still mixes scales.
+    prices = [float(c[5]) for c in comps if c[5] and 3000 <= float(c[5]) <= 500000]
+    rows = "".join(f'<tr><td><a href="/company/{c[0]}">{e(c[1] or "")}</a></td>'
+                   f'<td>{e(c[2] or "")}</td><td>{c[3] if c[3] else "—"}</td><td>{c[4] or 0}</td>'
+                   f'<td>{(money(c[5]) + " ₽/м²") if c[5] and 3000 <= float(c[5]) <= 500000 else "—"}</td>'
+                   f'<td>{c[7] or 0}</td></tr>' for c in comps)
+    price_line = ""
+    if prices:
+        price_line = f" Цены — от {money(min(prices))} до {money(max(prices))} ₽ за м²."
+    item_ld = _json.dumps({
+        "@context": "https://schema.org", "@type": "ItemList",
+        "name": f"{cat_value.replace('_', ' ')} — {region_value}",
+        "numberOfItems": len(comps),
+        "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": c[1] or "",
+                             "url": f"https://mcp-market.ru/company/{c[0]}"}
+                            for i, c in enumerate(comps[:30])],
+    }, ensure_ascii=False).replace("<", "\\u003c")
+    body = (f"<h1>{cat_h} — {e(region_value)}</h1>"
+            f'<p class="intro">{len(comps)} '
+            f'{_plural(len(comps), "компания", "компании", "компаний")} категории «{cat_h}» '
+            f"в регионе {e(region_value)}.{price_line} Сортировка по рейтингу и числу отзывов.</p>"
+            f"<table><thead><tr><th>Компания</th><th>Город</th><th>Рейтинг</th>"
+            f"<th>Отзывов</th><th>Цена за м²</th><th>Проектов</th></tr></thead>"
+            f"<tbody>{rows}</tbody></table>"
+            f'<script type="application/ld+json">{item_ld}</script>'
+            f'<p style="margin-top:24px"><a href="/catalog/{cat_slug}">'
+            f"Все регионы категории «{cat_h}»</a></p>")
+    return HTMLResponse(_cat_shell(
+        f"{cat_value.replace('_', ' ').capitalize()} — {region_value}: {len(comps)} "
+        f"{_plural(len(comps), 'компания', 'компании', 'компаний')} | MCP Market",
+        f"{len(comps)} {_plural(len(comps), 'компания', 'компании', 'компаний')} категории "
+        f"«{cat_value.replace('_', ' ')}» в регионе {region_value}: рейтинги, отзывы, цены за м².",
+        f"https://mcp-market.ru/catalog/{cat_slug}/{region_slug}",
+        [("MCP Market Russia", "/"), ("Каталог", "/catalog"),
+         (cat_value.replace("_", " "), f"/catalog/{cat_slug}"),
+         (region_value, f"/catalog/{cat_slug}/{region_slug}")], body))
